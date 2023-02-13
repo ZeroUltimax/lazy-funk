@@ -25,6 +25,8 @@ export type Selector<E, K> /* sel */ = (e: E) => K;
 // Gives an ordering between two elements.
 export type Compare<E> /* cmp */ = (a: E, b: E) => number;
 
+export type Group<E, K> /* grp */ = Lazy<E> & { key: K };
+
 // A single use sequence of elements.
 export type Gen<E> /* it */ = Generator<E>;
 
@@ -32,7 +34,7 @@ export type Gen<E> /* it */ = Generator<E>;
 export type Lazy<E> /* z */ = Iterable<E>;
 
 // A sequence of grouped sequences, and their key.
-export type LazyGroup<E, K> /* zz */ = Lazy<[K, Lazy<E>]>;
+export type LazyGroup<E, K> /* zz */ = Lazy<Group<E, K>>;
 
 // Produces new generator
 export type GenProducer<A extends any[], E> /* _prod */ = (
