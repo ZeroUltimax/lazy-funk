@@ -14,7 +14,7 @@ describe("MemoGroupIterator", () => {
   const sel = (n: number) => n % 3 | 0;
 
   it("Groups by key", () => {
-    const grps = new MemoGroupIterable(numbers(), sel);
+    const grps = MemoGroupIterable.FromLazy(numbers(), sel);
     const actual: [number, number[]][] = [];
     for (const grp of grps) {
       actual.push([grp.key, [...grp]]);
@@ -28,7 +28,7 @@ describe("MemoGroupIterator", () => {
   });
 
   it("Hands out iterators to existing keys", () => {
-    const grps = new MemoGroupIterable(numbers(), sel);
+    const grps = MemoGroupIterable.FromLazy(numbers(), sel);
     const key = 2;
     const expected = [2, 5];
     const actual = [...grps.iterateValues(key)];
@@ -36,7 +36,7 @@ describe("MemoGroupIterator", () => {
   });
 
   it("Hands out iterators to non-existant keys", () => {
-    const grps = new MemoGroupIterable(numbers(), sel);
+    const grps = MemoGroupIterable.FromLazy(numbers(), sel);
     const key = -1;
     const expected: number[] = [];
     const actual = [...grps.iterateValues(key)];
@@ -44,7 +44,7 @@ describe("MemoGroupIterator", () => {
   });
 
   it("Gives order-independant iterables", () => {
-    const grps = new MemoGroupIterable(numbers(), sel);
+    const grps = MemoGroupIterable.FromLazy(numbers(), sel);
     const [iter0, iter1, iter2] = [...grps];
     const grp20 = [...iter2];
     const grp00 = [...iter0];

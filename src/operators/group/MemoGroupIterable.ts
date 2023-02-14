@@ -4,11 +4,11 @@ export class MemoGroupIterable<E, K> implements LazyGroup<E, K> {
   private keys: K[] = [];
   private mem = new Map<K, E[]>();
 
-  private it: Iterator<E>;
-
-  constructor(z: Lazy<E>, private sel: Selector<E, K>) {
-    this.it = z[Symbol.iterator]();
+  public static FromLazy<E, K>(z: Lazy<E>, sel: Selector<E, K>) {
+    return new MemoGroupIterable(z[Symbol.iterator](), sel);
   }
+
+  constructor(private it: Iterator<E>, private sel: Selector<E, K>) {}
 
   public *iterateKeys(): Generator<K> {
     const buff = this.keys;
