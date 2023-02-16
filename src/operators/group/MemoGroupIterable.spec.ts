@@ -1,15 +1,14 @@
+import { lazyfy } from "../../funk/lazyfy";
 import { MemoGroupIterable } from "./MemoGroupIterable";
 
 describe("MemoGroupIterator", () => {
   const numbers = () => {
     let called = false;
-    return {
-      *[Symbol.iterator]() {
-        if (called) throw new Error("Iterated more than once");
-        called = true;
-        yield* [0, 1, 2, 3, 4, 5];
-      },
-    };
+    return lazyfy(function* () {
+      if (called) throw new Error("Iterated more than once");
+      called = true;
+      yield* [0, 1, 2, 3, 4, 5];
+    });
   };
   const sel = (n: number) => n % 3 | 0;
 

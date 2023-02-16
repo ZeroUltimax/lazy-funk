@@ -1,11 +1,13 @@
 import type { Gen, Group, Lazy, LazyGroup, Selector } from "../../coreTypes";
+import { lazyfy } from "../../funk/lazyfy";
+import { nrgz } from "../../funk/nrgz";
 
 export class MemoGroupIterable<E, K> implements LazyGroup<E, K> {
   private keys: K[] = [];
   private mem = new Map<K, E[]>();
 
   public static FromLazy<E, K>(z: Lazy<E>, sel: Selector<E, K>) {
-    return new MemoGroupIterable(z[Symbol.iterator](), sel);
+    return new MemoGroupIterable(nrgz(z), sel);
   }
 
   constructor(private it: Iterator<E>, private sel: Selector<E, K>) {}
@@ -80,6 +82,9 @@ export class MemoGroupIterable<E, K> implements LazyGroup<E, K> {
   }
 
   public getGroup(key: K): Group<E, K> {
-    return { key, [Symbol.iterator]: () => this.iterateValues(key) };
+    return Object.assign(
+      { key },
+      lazyfy(() => this.iterateValues(key))
+    );
   }
 }

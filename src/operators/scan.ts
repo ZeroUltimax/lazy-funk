@@ -1,8 +1,10 @@
 import { Accumulator, Gen, Lazy, Seed } from "../coreTypes";
+import { lazyfy } from "../funk/lazyfy";
+import { nrgz } from "../funk/nrgz";
 import { throws } from "../funk/throws";
 
 function* _scanSeedless<E>(z: Lazy<E>, acc: Accumulator<E, E>) {
-  const it = z[Symbol.iterator]();
+  const it = nrgz(z);
   let nx = it.next();
   if (nx.done) {
     throws("No seed");
@@ -45,10 +47,10 @@ export function scan<E, A = E, S extends Seed<A> = Seed<A>>(
   seed?: S
 ): Lazy<A> {
   if (seed) {
-    return { [Symbol.iterator]: () => _scanSeeded(z, acc, seed) };
+    return lazyfy(() => _scanSeeded(z, acc, seed));
   } else {
-    return {
-      [Symbol.iterator]: () => _scanSeedless(z, acc as any),
-    } as Lazy<A>;
+    return lazyfy(() =>
+      _scanSeedless(z, acc as unknown as Accumulator<E, E>)
+    ) as unknown as Lazy<A>;
   }
 }
