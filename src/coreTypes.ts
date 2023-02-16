@@ -22,6 +22,9 @@ export type Projection<E, R> /* proj */ = (e: E) => R;
 // Chooses a key representing the element.
 export type Selector<E, K> /* sel */ = (e: E) => K;
 
+// Creates sucessive values by accumulating elements
+export type Accumulator<A, E> /* acc */ = (acc: A, e: E) => A;
+
 // Gives an ordering between two elements.
 export type Compare<E> /* cmp */ = (a: E, b: E) => number;
 
