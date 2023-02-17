@@ -17,6 +17,6 @@ export const cmpCompose =
     cmp1(a, b) || cmp2(a, b);
 
 export const cmpBy =
-  <E, K>(selector: Selector<E, K>, keyCmp: Compare<K>) =>
+  <E, K>(selector: Selector<E, K>, keyCmp: Compare<K> = cmpNatural) =>
   (a: E, b: E) =>
     keyCmp(selector(a), selector(b));
