@@ -1,4 +1,4 @@
-import { sort } from "./sort";
+import { sort, __TEST_ONLY__ } from "./sort";
 
 const numbers = () => [
   522, 786, 778, 700, 508, 308, 822, 140, 487, 899, 771, 864, 274, 451, 889,
@@ -23,8 +23,16 @@ const numbers = () => [
 describe("sort", () => {
   it("Sorts Numbers Desc", () => {
     const cmp = (a: number, b: number) => b - a;
-    const expected = [...numbers()].sort(cmp);
     const actual = [...sort(numbers(), cmp)];
+    const expected = numbers().sort(cmp);
+    expect(actual).toEqual(expected);
+  });
+  it("Sorts with heapsort", () => {
+    const { _heapSort } = __TEST_ONLY__;
+    const nums = numbers();
+    const cmp = (a: number, b: number) => b - a;
+    const actual = [..._heapSort(nums, cmp, 0, nums.length)];
+    const expected = numbers().sort(cmp);
     expect(actual).toEqual(expected);
   });
 });

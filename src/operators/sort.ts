@@ -129,13 +129,11 @@ function* _introSort<E>(
   maxDepth: number
 ): Gen<E> {
   if (end - start <= SelectionSortSize) {
-    yield* _insertSort(buf, cmp, start, end);
-    return;
+    return yield* _insertSort(buf, cmp, start, end);
   }
 
   if (maxDepth === 0) {
-    yield* _heapSort(buf, cmp, start, end);
-    return;
+    return yield* _heapSort(buf, cmp, start, end);
   }
 
   const piv = med3Pivot(buf, cmp, start, end);
@@ -167,3 +165,5 @@ export function sort<E>(z: Lazy<E>, cmp: Compare<E>): Lazy<E> {
   const maxDepth = Math.log2(end) << 1;
   return lazyfy(() => _introSort(buf, cmp, start, end, maxDepth));
 }
+
+export const __TEST_ONLY__ = { _heapSort };
