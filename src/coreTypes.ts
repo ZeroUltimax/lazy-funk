@@ -28,6 +28,9 @@ export type Accumulator<A, E> /* acc */ = (acc: A, e: E) => A;
 // Gives an ordering between two elements.
 export type Compare<E> /* cmp */ = (a: E, b: E) => number;
 
+// Takes two elements and combines them into one.
+export type Zipper<E, F, R> /* zip */ = (elA: E, elB: F) => R;
+
 export type Group<E, K> /* grp */ = Lazy<E> & { key: K };
 
 // A single use sequence of elements.
