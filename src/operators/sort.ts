@@ -13,7 +13,9 @@ function swp<E>(buf: E[], a: number, b: number) {
   buf[b] = swp;
 }
 
-function* _insertSort<E>(
+// IntroSort usually uses insertionSort.
+// With selectionSort, we can immediately yield the result though.
+function* _selectSort<E>(
   buf: E[],
   cmp: Compare<E>,
   start: number,
@@ -129,7 +131,7 @@ function* _introSort<E>(
   maxDepth: number
 ): Gen<E> {
   if (end - start <= SelectionSortSize) {
-    return yield* _insertSort(buf, cmp, start, end);
+    return yield* _selectSort(buf, cmp, start, end);
   }
 
   if (maxDepth === 0) {
