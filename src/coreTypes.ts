@@ -39,9 +39,6 @@ export type Gen<E> /* it */ = Generator<E>;
 // A re-useable sequence of elements.
 export type Lazy<E> /* z */ = Iterable<E>;
 
-// A sequence of grouped sequences, and their key.
-export type LazyGroup<E, K> /* zz */ = Lazy<Group<E, K>>;
-
 // Produces new generator
 export type GenProducer<A extends any[], E> /* _prod */ = (
   ...args: A

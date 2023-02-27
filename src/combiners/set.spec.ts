@@ -1,15 +1,4 @@
-import { distinct, distinctBy, setOperations, setOperationsBy } from "./set";
-
-describe("Distinct", () => {
-  it("Removes duplicates", () => {
-    const numbers = [
-      10, 20, 18, 4, 15, 11, 7, 7, 9, 9, 14, 6, 7, 13, 8, 20, 12, 15, 16, 14,
-    ];
-    const expectd = [10, 20, 18, 4, 15, 11, 7, 9, 14, 6, 13, 8, 12, 16];
-    const actual = [...distinct(numbers)];
-    expect(actual).toEqual(expectd);
-  });
-});
+import { setOperations, setOperationsBy } from "./set";
 
 describe("Distinct By", () => {
   it("Removes duplicates", () => {

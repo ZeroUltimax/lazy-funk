@@ -1,11 +1,11 @@
 import { Gen, Lazy, Zipper } from "../coreTypes";
 import { nrgz } from "../funk/nrgz";
-import { lazyfyOperator } from "./lazyfyOperator";
+import { lazyfyOperator } from "../operators/lazyfyOperator";
 
-function* _zipWith<E, F, R>(
-  za: Lazy<E>,
-  zb: Lazy<F>,
-  zip: Zipper<E, F, R>
+function* _zipWith<A, B, R>(
+  za: Lazy<A>,
+  zb: Lazy<B>,
+  zip: Zipper<A, B, R>
 ): Gen<R> {
   const ita = nrgz(za);
   const itb = nrgz(zb);
@@ -23,7 +23,7 @@ function* _zipWith<E, F, R>(
 
 export const zipWith = lazyfyOperator(_zipWith);
 
-const arrayZip = <E, F>(ela: E, elb: F) => [ela, elb] as const;
+const arrayZip = <A, B>(ela: A, elb: B) => [ela, elb] as const;
 
-export const zip = <E, F>(za: Lazy<E>, zb: Lazy<F>) =>
+export const zip = <A, B>(za: Lazy<A>, zb: Lazy<B>) =>
   zipWith(za, zb, arrayZip);
