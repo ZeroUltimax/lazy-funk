@@ -2,32 +2,42 @@ import { Lazy, Seed, Selector, Zipper } from "../coreTypes";
 import { lazyfy } from "../funk/lazyfy";
 import { MemoKeyedIterator } from "../iterables/MemoKeyedIterator";
 
-type ResultSelector<A, B, R> = Zipper<A, B, R>;
+type ResultSelector<A, Ad, B, Bd, K, R> = (a: A | Ad, b: B | Bd, key: K) => R;
 
 const nullSeed = () => null;
 
-function* inner<A, B, R>(
-  zA: Lazy<A>,
-  zB: Lazy<B>,
-  rSel: ResultSelector<A, B, R>
+const invertSel =
+  <A, Ad, B, Bd, K, R>(
+    rSel: ResultSelector<A, Ad, B, Bd, K, R>
+  ): ResultSelector<B, Bd, A, Ad, K, R> =>
+  (b, a, key) =>
+    rSel(a, b, key);
+
+function* inner<A, B, K, R>(
+  za: Lazy<A>,
+  zb: Lazy<B>,
+  key: K,
+  rSel: ResultSelector<A, never, B, never, K, R>
 ) {
-  for (const a of zA) for (const b of zB) yield rSel(a, b);
+  for (const a of za) for (const b of zb) yield rSel(a, b, key);
 }
 
-function* left<A, Bd, R>(
-  zA: Lazy<A>,
+function* left<A, Bd, K, R>(
+  za: Lazy<A>,
   seedB: Seed<Bd>,
-  rSel: ResultSelector<A, Bd, R>
+  key: K,
+  rSel: ResultSelector<A, never, never, Bd, K, R>
 ) {
-  for (const a of zA) yield rSel(a, seedB());
+  for (const a of za) yield rSel(a, seedB(), key);
 }
 
-function* right<Ad, B, R>(
+function* right<Ad, B, K, R>(
   seedA: Seed<Ad>,
-  zB: Lazy<B>,
-  rSel: ResultSelector<Ad, B, R>
+  zb: Lazy<B>,
+  key: K,
+  rSel: ResultSelector<never, Ad, B, never, K, R>
 ) {
-  for (const b of zB) yield rSel(seedA(), b);
+  for (const b of zb) yield rSel(seedA(), b, key);
 }
 
 function* none() {}
@@ -47,7 +57,7 @@ function _universalJoin<A, Ad, B, Bd, K, R>(
   seedA: Seed<Ad>,
   iterB: MemoKeyedIterator<B, K>,
   seedB: Seed<Bd>,
-  rSel: ResultSelector<A | Ad, B | Bd, R>,
+  rSel: ResultSelector<A, Ad, B, Bd, K, R>,
   key: K,
   strat: JoinStrategy
 ) {
@@ -60,26 +70,26 @@ function _universalJoin<A, Ad, B, Bd, K, R>(
 
   if (zak) {
     if (zbk) {
-      return strat.inner(zak, zbk, rSel);
+      return strat.inner(zak, zbk, key, rSel);
     } else {
-      return strat.left(zak, seedB, rSel);
+      return strat.left(zak, seedB, key, rSel);
     }
   } else {
-    return strat.right(seedA, zbk!, rSel);
+    return strat.right(seedA, zbk!, key, rSel);
   }
 }
 
 function* _innerJoin<A, B, K, R>(
   iterA: MemoKeyedIterator<A, K>,
   iterB: MemoKeyedIterator<B, K>,
-  rSel: ResultSelector<A, B, R>
+  rSel: ResultSelector<A, never, B, never, K, R>
 ) {
   for (const key of iterA.iterateKeys())
     yield* _universalJoin(
       iterA,
-      nullSeed as Seed<A>,
+      nullSeed as Seed<never>,
       iterB,
-      nullSeed as Seed<B>,
+      nullSeed as Seed<never>,
       rSel,
       key,
       innerStrat
@@ -90,12 +100,12 @@ function* _halfJoin<A, B, Bd, K, R>(
   iterA: MemoKeyedIterator<A, K>,
   iterB: MemoKeyedIterator<B, K>,
   seedB: Seed<Bd>,
-  rSel: ResultSelector<A, B | Bd, R>
+  rSel: ResultSelector<A, never, B, Bd, K, R>
 ) {
   for (const key of iterA.iterateKeys())
     yield* _universalJoin(
       iterA,
-      nullSeed as Seed<A>,
+      nullSeed as Seed<never>,
       iterB,
       seedB,
       rSel,
@@ -109,7 +119,7 @@ function* _fullJoin<A, Ad, B, Bd, K, R>(
   seedA: Seed<Ad>,
   iterB: MemoKeyedIterator<B, K>,
   seedB: Seed<Bd>,
-  rSel: ResultSelector<A | Ad, B | Bd, R>
+  rSel: ResultSelector<A, Ad, B, Bd, K, R>
 ) {
   for (const key of iterA.iterateKeys())
     yield* _universalJoin(iterA, seedA, iterB, seedB, rSel, key, fullStrat);
@@ -123,7 +133,7 @@ export function join<A, B, K, R>(
   zb: Lazy<B>,
   selA: Selector<A, K>,
   selB: Selector<B, K>,
-  rSel: ResultSelector<A, B, R>
+  rSel: ResultSelector<A, never, B, never, K, R>
 ) {
   const iterA = MemoKeyedIterator.FromLazy(za, selA);
   const iterB = MemoKeyedIterator.FromLazy(zb, selB);
@@ -136,7 +146,7 @@ export function leftJoinWithDefault<A, B, Bd, K, R>(
   selA: Selector<A, K>,
   selB: Selector<B, K>,
   defaultB: Seed<Bd>,
-  rSel: ResultSelector<A, B | Bd, R>
+  rSel: ResultSelector<A, never, B, Bd, K, R>
 ) {
   const iterA = MemoKeyedIterator.FromLazy(za, selA);
   const iterB = MemoKeyedIterator.FromLazy(zb, selB);
@@ -148,7 +158,7 @@ export const leftJoin = <A, B, K, R>(
   zb: Lazy<B>,
   selA: Selector<A, K>,
   selB: Selector<B, K>,
-  rSel: ResultSelector<A, B | null, R>
+  rSel: ResultSelector<A, never, B, null, K, R>
 ) => leftJoinWithDefault(za, zb, selA, selB, nullSeed, rSel);
 
 export const rightJoinWithDefault = <A, Ad, B, K, R>(
@@ -157,22 +167,16 @@ export const rightJoinWithDefault = <A, Ad, B, K, R>(
   selA: Selector<A, K>,
   selB: Selector<B, K>,
   defaultA: Seed<Ad>,
-  rSel: ResultSelector<A | Ad, B, R>
-) =>
-  leftJoinWithDefault(zb, za, selB, selA, defaultA, (b: B, a: A | Ad) =>
-    rSel(a, b)
-  );
+  rSel: ResultSelector<A, Ad, B, never, K, R>
+) => leftJoinWithDefault(zb, za, selB, selA, defaultA, invertSel(rSel));
 
 export const rightJoin = <A, B, K, R>(
   za: Lazy<A>,
   zb: Lazy<B>,
   selA: Selector<A, K>,
   selB: Selector<B, K>,
-  rSel: ResultSelector<A | null, B, R>
-) =>
-  leftJoinWithDefault(zb, za, selB, selA, nullSeed, (b: B, a: A | null) =>
-    rSel(a, b)
-  );
+  rSel: ResultSelector<A, null, B, never, K, R>
+) => leftJoinWithDefault(zb, za, selB, selA, nullSeed, invertSel(rSel));
 
 export function fullJoinWithDefault<A, Ad, B, Bd, K, R>(
   za: Lazy<A>,
@@ -181,7 +185,7 @@ export function fullJoinWithDefault<A, Ad, B, Bd, K, R>(
   selB: Selector<B, K>,
   defaultA: Seed<Ad>,
   defaultB: Seed<Bd>,
-  rSel: ResultSelector<A | Ad, B | Bd, R>
+  rSel: ResultSelector<A, Ad, B, Bd, K, R>
 ) {
   const iterA = MemoKeyedIterator.FromLazy(za, selA);
   const iterB = MemoKeyedIterator.FromLazy(zb, selB);
@@ -193,5 +197,5 @@ export const fullJoin = <A, B, K, R>(
   zb: Lazy<B>,
   selA: Selector<A, K>,
   selB: Selector<B, K>,
-  rSel: ResultSelector<A | null, B | null, R>
+  rSel: ResultSelector<A, null, B, null, K, R>
 ) => fullJoinWithDefault(za, zb, selA, selB, nullSeed, nullSeed, rSel);

@@ -1,28 +1,5 @@
 import { setOperations, setOperationsBy } from "./set";
 
-describe("Distinct By", () => {
-  it("Removes duplicates", () => {
-    const words = [
-      "one",
-      "heat",
-      "crazy",
-      "harsh",
-      "resolute",
-      "decorate",
-      "bore",
-      "hook",
-      "grab",
-      "run",
-      "squalid",
-      "shake",
-    ];
-    const selLength = (w: string) => w.length;
-    const expectd = ["one", "heat", "crazy", "resolute", "squalid"];
-    const actual = [...distinctBy(words, selLength)];
-    expect(actual).toEqual(expectd);
-  });
-});
-
 describe("Set Operations", () => {
   it("Gives set results", () => {
     const a = [0, 1, 2, 3];
