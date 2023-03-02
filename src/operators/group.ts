@@ -1,12 +1,11 @@
 import { Group, Lazy, Predicate, Selector } from "../coreTypes";
 import { lazyfy } from "../funk/lazyfy";
 import { MemoKeyedIterator } from "../iterables/MemoKeyedIterator";
-import { lazyfyOperator } from "./lazyfyOperator";
 
 const getGroup = <E, K>(iter: MemoKeyedIterator<E, K>, key: K): Group<E, K> =>
   Object.assign(
-    { key },
-    lazyfy(() => iter.iterateValues(key))
+    lazyfy(() => iter.iterateValues(key)),
+    { key }
   );
 
 function* _groups<E, K>(iter: MemoKeyedIterator<E, K>) {
