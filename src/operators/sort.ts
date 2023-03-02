@@ -1,5 +1,5 @@
 import { Compare, Gen, Lazy, Predicate } from "../coreTypes";
-import { lazyfy } from "../funk/lazyfy";
+import { lazyfyOperator } from "./lazyfyOperator";
 
 function pivotPredicate<E>(piv: E, cmp: Compare<E>): Predicate<E> {
   return function (el: E) {
@@ -160,12 +160,15 @@ function* _introSort<E>(
   yield* _introSort(buf, cmp, mid, end, maxDepth - 1);
 }
 
-export function sort<E>(z: Lazy<E>, cmp: Compare<E>): Lazy<E> {
+function* _sort<E>(z: Lazy<E>, cmp: Compare<E>): Gen<E> {
   const buf = [...z];
   const start = 0;
   const end = buf.length;
   const maxDepth = Math.log2(end) << 1;
-  return lazyfy(() => _introSort(buf, cmp, start, end, maxDepth));
+  yield* _introSort(buf, cmp, start, end, maxDepth);
+}
+
+export const sort = lazyfyOperator(_sort);
 }
 
 export const __TEST_ONLY__ = { _heapSort };
