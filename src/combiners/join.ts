@@ -2,6 +2,8 @@ import { Lazy, Seed, Selector, Zipper } from "../coreTypes";
 import { lazyfy } from "../funk/lazyfy";
 import { MemoKeyedIterator } from "../iterables/MemoKeyedIterator";
 
+// This code is extremely similar to the group join, but when refactored, generates just as much code, but more confusing.
+// Instead of implementing joins as a flat groupJoin with indirection, I opted for duplicated but readable code.
 type ResultSelector<A, Ad, B, Bd, K, R> = (a: A | Ad, b: B | Bd, key: K) => R;
 
 const nullSeed = () => null;
