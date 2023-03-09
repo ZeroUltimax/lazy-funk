@@ -1,6 +1,6 @@
 import { Compare, Gen, Lazy, Predicate, Sorted } from "../coreTypes";
 import { lazyfy } from "../funk/lazyfy";
-import { lazyfyOperator } from "./lazyfyOperator";
+import { nrgz } from "../funk/nrgz";
 
 function pivotPredicate<E>(piv: E, cmp: Compare<E>): Predicate<E> {
   return function (el: E) {
@@ -176,7 +176,10 @@ export const sort = <E>(z: Lazy<E>, cmp: Compare<E>): Sorted<E> =>
   );
 
 export function asSorted<E>(z: Lazy<E>, cmp: Compare<E>): Sorted<E> {
-  return Object.assign({}, z, { cmp });
+  return Object.assign(
+    lazyfy(() => nrgz(z)),
+    { cmp }
+  );
 }
 
 export const __TEST_ONLY__ = { _heapSort };

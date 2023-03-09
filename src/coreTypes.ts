@@ -39,7 +39,9 @@ export type Group<E, K> /* grp */ = Lazy<E> & { readonly key: K };
 export type Gen<E> /* it */ = Generator<E>;
 
 // A re-useable sequence of elements.
-export type Lazy<E> /* z */ = Iterable<E>;
+export interface Lazy<E> /* z */ {
+  [Symbol.iterator](): Iterator<E, unknown, undefined>;
+}
 
 // Produces new generator
 export type GenProducer<A extends any[], E> /* _prod */ = (
