@@ -1,4 +1,5 @@
 import { Lazy, Selector } from "../coreTypes";
+import { lazyfy } from "../funk/lazyfy";
 import { nrgz } from "../funk/nrgz";
 
 export class MemoKeyedIterator<E, K> {
@@ -64,4 +65,12 @@ export class MemoKeyedIterator<E, K> {
     map.set(key, [el]);
     return true;
   }
+}
+
+export function lazyKeys<E, K>(iter: MemoKeyedIterator<E, K>) {
+  return lazyfy(() => iter.iterateKeys());
+}
+
+export function lazyValues<E, K>(iter: MemoKeyedIterator<E, K>, key: K) {
+  return lazyfy(() => iter.iterateValues(key));
 }

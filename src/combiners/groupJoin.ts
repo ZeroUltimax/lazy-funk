@@ -1,6 +1,6 @@
 import { Lazy, Seed, Selector, Zipper } from "../coreTypes";
 import { lazyfy } from "../funk/lazyfy";
-import { MemoKeyedIterator } from "../iterables/MemoKeyedIterator";
+import { lazyValues, MemoKeyedIterator } from "../iterables/MemoKeyedIterator";
 
 type GroupResultSelector<A, Ad, B, Bd, K, R> = (
   a: Lazy<A> | Ad,
@@ -17,99 +17,14 @@ const invertSel =
   (b, a, key) =>
     rSel(a, b, key);
 
-function* innerGroup<A, B, K, R>(
-  za: Lazy<A>,
-  zb: Lazy<B>,
-  key: K,
-  rSel: GroupResultSelector<A, never, B, never, K, R>
-) {
-  yield rSel(za, zb, key);
-}
-
-function* leftGroup<A, Bd, K, R>(
-  za: Lazy<A>,
-  seedB: Seed<Bd>,
-  key: K,
-  rSel: GroupResultSelector<A, never, never, Bd, K, R>
-) {
-  yield rSel(za, seedB(), key);
-}
-
-function* rightGroup<Ad, B, K, R>(
-  seedA: Seed<Ad>,
-  zb: Lazy<B>,
-  key: K,
-  rSel: GroupResultSelector<never, Ad, B, never, K, R>
-) {
-  yield rSel(seedA(), zb, key);
-}
-
-function* none() {}
-
-interface JoinStrategy {
-  innerGroup: typeof innerGroup;
-  leftGroup: typeof leftGroup;
-  rightGroup: typeof rightGroup;
-}
-
-const fullStrat: JoinStrategy = {
-  innerGroup,
-  leftGroup,
-  rightGroup,
-};
-const halfStrat: JoinStrategy = {
-  innerGroup,
-  leftGroup,
-  rightGroup: none,
-};
-const innerStrat: JoinStrategy = {
-  innerGroup,
-  leftGroup: none,
-  rightGroup: none,
-};
-
-function _universalGroupJoin<A, Ad, B, Bd, K, R>(
-  iterA: MemoKeyedIterator<A, K>,
-  seedA: Seed<Ad>,
-  iterB: MemoKeyedIterator<B, K>,
-  seedB: Seed<Bd>,
-  rSel: GroupResultSelector<A, Ad, B, Bd, K, R>,
-  key: K,
-  strat: JoinStrategy
-) {
-  const zak = iterA.containsKey(key)
-    ? lazyfy(() => iterA.iterateValues(key))
-    : null;
-  const zbk = iterB.containsKey(key)
-    ? lazyfy(() => iterB.iterateValues(key))
-    : null;
-
-  if (zak) {
-    if (zbk) {
-      return strat.innerGroup(zak, zbk, key, rSel);
-    } else {
-      return strat.leftGroup(zak, seedB, key, rSel);
-    }
-  } else {
-    return strat.rightGroup(seedA, zbk!, key, rSel);
-  }
-}
-
 function* _innerGroupJoin<A, B, K, R>(
   iterA: MemoKeyedIterator<A, K>,
   iterB: MemoKeyedIterator<B, K>,
   rSel: GroupResultSelector<A, never, B, never, K, R>
 ) {
   for (const key of iterA.iterateKeys())
-    yield* _universalGroupJoin(
-      iterA,
-      nullSeed as Seed<never>,
-      iterB,
-      nullSeed as Seed<never>,
-      rSel,
-      key,
-      innerStrat
-    );
+    if (iterB.containsKey(key))
+      yield rSel(lazyValues(iterA, key), lazyValues(iterB, key), key);
 }
 
 function* _halfGroupJoin<A, B, Bd, K, R>(
@@ -119,15 +34,9 @@ function* _halfGroupJoin<A, B, Bd, K, R>(
   rSel: GroupResultSelector<A, never, B, Bd, K, R>
 ) {
   for (const key of iterA.iterateKeys())
-    yield* _universalGroupJoin(
-      iterA,
-      nullSeed as Seed<never>,
-      iterB,
-      seedB,
-      rSel,
-      key,
-      halfStrat
-    );
+    if (iterB.containsKey(key))
+      yield rSel(lazyValues(iterA, key), lazyValues(iterB, key), key);
+    else yield rSel(lazyValues(iterA, key), seedB(), key);
 }
 
 function* _fullGroupJoin<A, Ad, B, Bd, K, R>(
@@ -138,26 +47,13 @@ function* _fullGroupJoin<A, Ad, B, Bd, K, R>(
   rSel: GroupResultSelector<A, Ad, B, Bd, K, R>
 ) {
   for (const key of iterA.iterateKeys())
-    yield* _universalGroupJoin(
-      iterA,
-      seedA,
-      iterB,
-      seedB,
-      rSel,
-      key,
-      fullStrat
-    );
+    if (iterB.containsKey(key))
+      yield rSel(lazyValues(iterA, key), lazyValues(iterB, key), key);
+    else yield rSel(lazyValues(iterA, key), seedB(), key);
+
   for (const key of iterB.iterateKeys())
     if (!iterA.containsKey(key))
-      yield* _universalGroupJoin(
-        iterA,
-        seedA,
-        iterB,
-        seedB,
-        rSel,
-        key,
-        fullStrat
-      );
+      yield rSel(seedA(), lazyValues(iterB, key), key);
 }
 
 export function groupJoin<A, B, K, R>(
