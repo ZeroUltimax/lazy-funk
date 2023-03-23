@@ -1,15 +1,8 @@
 import { Compare, Gen, Sorted } from "../coreTypes";
+import { $min, $MinType, cmpSentinelMin } from "../funk/comparators";
 import { lazyfy } from "../funk/lazyfy";
 import { nrgz } from "../funk/nrgz";
 import { throws } from "../funk/throws";
-
-// I usually prefer not having guard values since it double the ammount of conditions.
-// In this case though, without the sentinel, you'd need crazy gymnastics and duplicated code to ensure lEl is always initialized.
-const $ = Symbol("Unyielded");
-type T$ = typeof $;
-
-const isNextEl = <E>(lEl: T$ | E, el: E, cmp: Compare<E>) =>
-  lEl === $ || cmp(lEl, el) < 0;
 
 function* _sortedUnion<E>(
   sza: Sorted<E>,
@@ -22,14 +15,14 @@ function* _sortedUnion<E>(
   let nxA = sItA.next();
   let nxB = sItB.next();
 
-  let lEl: E | T$ = $;
+  let lEl: E | $MinType = $min;
 
   outer: for (; !nxA.done && !nxB.done; nxA = sItA.next()) {
     const elA = nxA.value;
-    if (!isNextEl(lEl, elA, cmp)) continue outer;
+    if (cmpSentinelMin(lEl, elA, cmp) >= 0) continue outer;
     inner: for (; !nxB.done; nxB = sItB.next()) {
       const elB = nxB.value;
-      if (!isNextEl(lEl, elB, cmp)) continue inner;
+      if (cmpSentinelMin(lEl, elB, cmp) >= 0) continue inner;
       if (cmp(elA, elB) <= 0) {
         yield (lEl = elA);
         continue outer;
@@ -42,13 +35,13 @@ function* _sortedUnion<E>(
 
   for (; !nxA.done; nxA = sItA.next()) {
     const elA = nxA.value;
-    if (!isNextEl(lEl, elA, cmp)) continue;
+    if (cmpSentinelMin(lEl, elA, cmp) >= 0) continue;
     yield (lEl = elA);
   }
 
   for (; !nxB.done; nxB = sItB.next()) {
     const elB = nxB.value;
-    if (!isNextEl(lEl, elB, cmp)) continue;
+    if (cmpSentinelMin(lEl, elB, cmp) >= 0) continue;
     yield (lEl = elB);
   }
 }
@@ -75,14 +68,14 @@ function* _sortedIntersection<E>(
   let nxA = sItA.next();
   let nxB = sItB.next();
 
-  let lEl: E | T$ = $;
+  let lEl: E | $MinType = $min;
 
   outer: for (; !nxA.done && !nxB.done; nxA = sItA.next()) {
     const elA = nxA.value;
-    if (!isNextEl(lEl, elA, cmp)) continue outer;
+    if (cmpSentinelMin(lEl, elA, cmp) >= 0) continue outer;
     inner: for (; !nxB.done; nxB = sItB.next()) {
       const elB = nxB.value;
-      if (!isNextEl(lEl, elB, cmp)) continue inner;
+      if (cmpSentinelMin(lEl, elB, cmp) >= 0) continue inner;
       const cmpRes = cmp(elA, elB);
       if (cmpRes < 0) {
         lEl = elA;
@@ -124,14 +117,14 @@ function* _sortedDifference<E>(
   let nxA = sItA.next();
   let nxB = sItB.next();
 
-  let lEl: E | T$ = $;
+  let lEl: E | $MinType = $min;
 
   outer: for (; !nxA.done && !nxB.done; nxA = sItA.next()) {
     const elA = nxA.value;
-    if (!isNextEl(lEl, elA, cmp)) continue outer;
+    if (cmpSentinelMin(lEl, elA, cmp) >= 0) continue outer;
     inner: for (; !nxB.done; nxB = sItB.next()) {
       const elB = nxB.value;
-      if (!isNextEl(lEl, elB, cmp)) continue inner;
+      if (cmpSentinelMin(lEl, elB, cmp) >= 0) continue inner;
       const cmpRes = cmp(elA, elB);
       if (cmpRes < 0) {
         yield (lEl = elA);
@@ -149,7 +142,7 @@ function* _sortedDifference<E>(
 
   for (; !nxA.done; nxA = sItA.next()) {
     const elA = nxA.value;
-    if (!isNextEl(lEl, elA, cmp)) continue;
+    if (cmpSentinelMin(lEl, elA, cmp) >= 0) continue;
     yield (lEl = elA);
   }
 }
