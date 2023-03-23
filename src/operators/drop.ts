@@ -1,6 +1,6 @@
 import { Count, Gen, Lazy, Predicate } from "../coreTypes";
+import { lazyfyFunk } from "../funk/lazyfy";
 import { nrgz } from "../funk/nrgz";
-import { lazyfyOperator } from "./lazyfyOperator";
 
 function* _drop<E>(z: Lazy<E>, count: Count): Gen<E> {
   let idx = 0;
@@ -10,7 +10,7 @@ function* _drop<E>(z: Lazy<E>, count: Count): Gen<E> {
   }
 }
 
-export const drop = lazyfyOperator(_drop);
+export const drop = lazyfyFunk(_drop);
 
 function* _dropWhile<E>(z: Lazy<E>, pred: Predicate<E>): Gen<E> {
   const it = nrgz(z);
@@ -25,4 +25,4 @@ function* _dropWhile<E>(z: Lazy<E>, pred: Predicate<E>): Gen<E> {
   }
 }
 
-export const dropWhile = lazyfyOperator(_dropWhile);
+export const dropWhile = lazyfyFunk(_dropWhile);

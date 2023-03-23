@@ -1,6 +1,6 @@
 import { Gen, Lazy, Zipper } from "../coreTypes";
+import { lazyfyFunk } from "../funk/lazyfy";
 import { nrgz } from "../funk/nrgz";
-import { lazyfyOperator } from "../operators/lazyfyOperator";
 
 function* _zipWith<A, B, R>(
   za: Lazy<A>,
@@ -21,7 +21,7 @@ function* _zipWith<A, B, R>(
   }
 }
 
-export const zipWith = lazyfyOperator(_zipWith);
+export const zipWith = lazyfyFunk(_zipWith);
 
 const arrayZip = <A, B>(ela: A, elb: B) => [ela, elb] as const;
 

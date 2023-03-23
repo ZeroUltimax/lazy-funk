@@ -1,5 +1,5 @@
 import { Gen } from "../coreTypes";
-import { lazyfyProducer } from "./lazyfyProducer";
+import { lazyfyFunk } from "../funk/lazyfy";
 
 function* _range(
   start: number,
@@ -9,6 +9,6 @@ function* _range(
   for (let i = start; i < end; i += step) yield i;
 }
 
-export const range = lazyfyProducer(_range);
+export const range = lazyfyFunk(_range);
 export const iota = (start: number = 0, step: number = 1) =>
   range(start, Infinity, step);
