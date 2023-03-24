@@ -182,4 +182,24 @@ export function asSorted<E>(z: Lazy<E>, cmp: Compare<E>): Sorted<E> {
   );
 }
 
+function* _assertSorted<E>(z: Lazy<E>, cmp: Compare<E>): Gen<E> {
+  let it = nrgz(z);
+  let nx = it.next();
+  if (nx.done) return;
+  let lEl;
+  yield (lEl = nx.value);
+
+  for (nx = it.next(); !nx.done; nx = it.next()) {
+    const el = nx.value;
+    if (cmp(lEl, el) > 0) throw new Error("Not sorted");
+    yield (lEl = nx.value);
+  }
+}
+
+export const assertSorted = <E>(z: Lazy<E>, cmp: Compare<E>) =>
+  Object.assign(
+    lazyfy(() => _assertSorted(z, cmp)),
+    { cmp }
+  );
+
 export const __TEST_ONLY__ = { _heapSort };

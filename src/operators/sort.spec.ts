@@ -1,4 +1,5 @@
-import { sort, __TEST_ONLY__ } from "./sort";
+import { cmpNum } from "../funk/comparators";
+import { assertSorted, asSorted, sort, __TEST_ONLY__ } from "./sort";
 
 const numbers = () => [
   522, 786, 778, 700, 508, 308, 822, 140, 487, 899, 771, 864, 274, 451, 889,
@@ -34,5 +35,36 @@ describe("sort", () => {
     const actual = [..._heapSort(nums, cmp, 0, nums.length)];
     const expected = numbers().sort(cmp);
     expect(actual).toEqual(expected);
+  });
+});
+
+describe("asSorted", () => {
+  it("Marks a lazy sorted", () => {
+    const numbers = [1, 2, 3];
+    const actual = asSorted(numbers, cmpNum);
+    const actualNumbers = [...actual];
+    const actualCmp = actual.cmp;
+    const expectedNumbers = numbers;
+    const expectedCmp = cmpNum;
+    expect(actualNumbers).toEqual(expectedNumbers);
+    expect(actualCmp).toEqual(expectedCmp);
+  });
+});
+
+describe("assertSorted", () => {
+  it("Checks that a lazy is sorted", () => {
+    const numbers = [1, 2, 3];
+    const actual = assertSorted(numbers, cmpNum);
+    const actualNumbers = [...actual];
+    const actualCmp = actual.cmp;
+    const expectedNumbers = numbers;
+    const expectedCmp = cmpNum;
+    expect(actualNumbers).toEqual(expectedNumbers);
+    expect(actualCmp).toEqual(expectedCmp);
+  });
+  it("Throws if the lazy is not sorted", () => {
+    const numbers = [1, 2, 0];
+    const actual = assertSorted(numbers, cmpNum);
+    expect(() => [...actual]).toThrow();
   });
 });
