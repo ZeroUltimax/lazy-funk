@@ -17,7 +17,7 @@ function* _sortedUnion<E>(
 
   let lEl: E | $MinType = $min;
 
-  outer: for (; !nxA.done && !nxB.done; nxA = sItA.next()) {
+  outer: for (; !nxA.done; nxA = sItA.next()) {
     const elA = nxA.value;
     if (cmpSentinelMin(lEl, elA, cmp) >= 0) continue outer;
     inner: for (; !nxB.done; nxB = sItB.next()) {
@@ -29,7 +29,7 @@ function* _sortedUnion<E>(
       }
       yield (lEl = elB);
     }
-    // Important to not advance sItA if nxB.done
+    // Important to not advance sItA if nxB.done so out flush loop can handle it
     if (nxB.done) break outer;
   }
 
@@ -70,7 +70,7 @@ function* _sortedIntersection<E>(
 
   let lEl: E | $MinType = $min;
 
-  outer: for (; !nxA.done && !nxB.done; nxA = sItA.next()) {
+  outer: for (; !nxA.done; nxA = sItA.next()) {
     const elA = nxA.value;
     if (cmpSentinelMin(lEl, elA, cmp) >= 0) continue outer;
     inner: for (; !nxB.done; nxB = sItB.next()) {
@@ -87,7 +87,7 @@ function* _sortedIntersection<E>(
       }
       lEl = elB;
     }
-    // Important to not advance sItA if nxB.done
+    // Important to not advance sItA if nxB.done so out flush loop can handle it
     if (nxB.done) break outer;
   }
 }
@@ -119,7 +119,7 @@ function* _sortedDifference<E>(
 
   let lEl: E | $MinType = $min;
 
-  outer: for (; !nxA.done && !nxB.done; nxA = sItA.next()) {
+  outer: for (; !nxA.done; nxA = sItA.next()) {
     const elA = nxA.value;
     if (cmpSentinelMin(lEl, elA, cmp) >= 0) continue outer;
     inner: for (; !nxB.done; nxB = sItB.next()) {
@@ -136,7 +136,7 @@ function* _sortedDifference<E>(
       }
       lEl = elB;
     }
-    // Important to not advance sItA if nxB.done
+    // Important to not advance sItA if nxB.done so out flush loop can handle it
     if (nxB.done) break outer;
   }
 
