@@ -1,91 +1,124 @@
-import { Compare, Gen, Lazy, Seed, Sorted } from "../coreTypes";
-import { $min, $MinType, cmpSentinelMin } from "../funk/comparators";
-import { lazyfy } from "../funk/lazyfy";
-import { nrgz } from "../funk/nrgz";
+import { Lazy, Seed, Selector, Sorted, Zipper } from "../coreTypes";
+import { lazyfy, lazyfyFunk } from "../funk/lazyfy";
 import { throws } from "../funk/throws";
+import {
+  sortedGroupJoin,
+  sortedLeftGroupJoin,
+  sortedFullGroupJoin,
+} from "./sortedGroupJoin";
 
-type ResultSelector<E, Ad, Bd, R> = (a: E | Ad, b: E | Bd) => R;
+type SortedResultSelector<E, Ad, Bd, R> = (a: E | Ad, b: E | Bd) => R;
 
-function* _fullJoin<E, Ad, Bd, R>(
-  sza: Sorted<E>,
-  seedA: Seed<Ad>,
-  szb: Sorted<E>,
-  seedB: Seed<Bd>,
-  rSel: ResultSelector<E, Ad, Bd, R>,
-  cmp: Compare<E>
-): Gen<R> {
-  const sItA = nrgz(sza);
-  const sItB = nrgz(szb);
+const nullSeed = () => null;
 
-  let nxA = sItA.next();
-  let nxB = sItB.next();
+const invertSel =
+  <E, Ad, Bd, R>(
+    rSel: SortedResultSelector<E, Ad, Bd, R>
+  ): SortedResultSelector<E, Bd, Ad, R> =>
+  (b, a) =>
+    rSel(a, b);
 
-  let lEl: E | $MinType = $min;
-
-  let accB: E[] = [];
-  outer: for (; !nxA.done; nxA = sItA.next()) {
-    const elA = nxA.value;
-
-    if (cmpSentinelMin(lEl, elA, cmp) >= 0) {
-      if (accB.length) for (const elB of accB) yield rSel(elA, elB);
-      else yield rSel(elA, seedB());
-      continue outer;
-    }
-
-    accB = [];
-    inner: for (; !nxB.done; nxB = sItB.next()) {
-      const elB = nxB.value;
-
-      if (cmpSentinelMin(lEl, elB, cmp) >= 0) {
-        if (accB.length) {
-          accB.push(elB);
-          yield rSel(elA, elB);
-        } else {
-          yield rSel(seedA(), elB);
-        }
-        continue inner;
-      }
-
-      const cmpRes = cmp(elA, elB);
-      if (cmpRes < 0) {
-        lEl = elA;
-        if (accB.length === 0) yield rSel(elA, seedB());
-        continue outer;
-      }
-      if (cmpRes === 0) {
-        accB.push(elB);
-        yield rSel(elA, elB);
-      } else {
-        yield rSel(seedA(), elB);
-      }
-      lEl = elB;
-    }
-    // Important to not advance sItA if nxB.done so out flush loop can handle it
-    if (nxB.done && accB.length === 0) break outer;
-  }
-
-  // Use this for outer joins
-  for (; !nxA.done; nxA = sItA.next()) {
-    const elA = nxA.value;
-    yield rSel(elA, seedB());
-  }
-
-  for (; !nxB.done; nxB = sItB.next()) {
-    const elB = nxB.value;
-    yield rSel(seedA(), elB);
-  }
+function rawGroupSelector<A, Ad, B, Bd>(a: Lazy<A> | Ad, b: Lazy<B> | Bd) {
+  return { a, b };
 }
 
-const tmpNullSeed = () => null;
-
-export function sortedFullJoin<E, R>(
-  sza: Sorted<E>,
-  szb: Sorted<E>,
-  rSel: ResultSelector<E, null, null, R>
-): Lazy<R> {
+function _checkCommonCompare<E>(sza: Sorted<E>, szb: Sorted<E>): void {
   const { cmp: cmpa } = sza;
   const { cmp: cmpb } = szb;
   if (cmpa !== cmpb) return throws("Different compares");
-  const cmp = cmpa;
-  return lazyfy(() => _fullJoin(sza, tmpNullSeed, szb, tmpNullSeed, rSel, cmp));
+  return;
 }
+
+function* _sortedJoin<E, R>(
+  sza: Sorted<E>,
+  szb: Sorted<E>,
+  rSel: SortedResultSelector<E, never, never, R>
+) {
+  const joins = sortedGroupJoin(sza, szb, rawGroupSelector);
+  for (const j of joins)
+    for (const a of j.a) for (const b of j.b) yield rSel(a, b);
+}
+
+export function sortedJoin<E, R>(
+  sza: Sorted<E>,
+  szb: Sorted<E>,
+  rSel: SortedResultSelector<E, never, never, R>
+) {
+  _checkCommonCompare(sza, szb);
+  return lazyfy(() => _sortedJoin(sza, szb, rSel));
+}
+
+function* _sortedLeftJoin<E, Bd, R>(
+  sza: Sorted<E>,
+  szb: Sorted<E>,
+  defaultB: Seed<Bd>,
+  rSel: SortedResultSelector<E, never, Bd, R>
+) {
+  const joins = sortedLeftGroupJoin(sza, szb, rawGroupSelector);
+  for (const j of joins)
+    for (const a of j.a)
+      if (j.b) for (const b of j.b) yield rSel(a, b);
+      else yield rSel(a, defaultB());
+}
+
+export function sortedLeftJoinWithDefault<E, Bd, R>(
+  sza: Sorted<E>,
+  szb: Sorted<E>,
+  defaultB: Seed<Bd>,
+  rSel: SortedResultSelector<E, never, Bd, R>
+) {
+  _checkCommonCompare(sza, szb);
+  return lazyfy(() => _sortedLeftJoin(sza, szb, defaultB, rSel));
+}
+
+export const sortedLeftJoin = <E, R>(
+  sza: Sorted<E>,
+  szb: Sorted<E>,
+  rSel: SortedResultSelector<E, never, null, R>
+) => sortedLeftJoinWithDefault(sza, szb, nullSeed, rSel);
+
+export const sortedRightJoinWithDefault = <E, Ad, R>(
+  sza: Sorted<E>,
+  szb: Sorted<E>,
+  defaultA: Seed<Ad>,
+  rSel: SortedResultSelector<E, Ad, never, R>
+) => sortedLeftJoinWithDefault(szb, sza, defaultA, invertSel(rSel));
+
+export const sortedRightJoin = <E, R>(
+  sza: Sorted<E>,
+  szb: Sorted<E>,
+  rSel: SortedResultSelector<E, null, never, R>
+) => sortedLeftJoinWithDefault(szb, sza, nullSeed, invertSel(rSel));
+
+function* _sortedFullJoin<E, Ad, Bd, R>(
+  sza: Sorted<E>,
+  szb: Sorted<E>,
+  defaultA: Seed<Ad>,
+  defaultB: Seed<Bd>,
+  rSel: SortedResultSelector<E, Ad, Bd, R>
+) {
+  const joins = sortedFullGroupJoin(sza, szb, rawGroupSelector);
+  for (const j of joins)
+    if (j.a)
+      for (const a of j.a)
+        if (j.b) for (const b of j.b) yield rSel(a, b);
+        else yield rSel(a, defaultB());
+    else for (const b of j.b!) yield rSel(defaultA(), b);
+}
+
+export function sortedFullJoinWithDefault<E, Ad, Bd, R>(
+  sza: Sorted<E>,
+  szb: Sorted<E>,
+  defaultA: Seed<Ad>,
+  defaultB: Seed<Bd>,
+  rSel: SortedResultSelector<E, Ad, Bd, R>
+) {
+  _checkCommonCompare(sza, szb);
+  return lazyfy(() => _sortedFullJoin(sza, szb, defaultA, defaultB, rSel));
+}
+
+export const sortedFullJoin = <E, R>(
+  sza: Sorted<E>,
+  szb: Sorted<E>,
+  rSel: SortedResultSelector<E, null, null, R>
+) => sortedFullJoinWithDefault(sza, szb, nullSeed, nullSeed, rSel);
