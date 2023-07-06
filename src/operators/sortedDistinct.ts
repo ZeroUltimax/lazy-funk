@@ -1,19 +1,13 @@
-import { Compare, Gen, Sorted } from "../coreTypes";
-import { $min, $MinType, cmpSentinelMin } from "../funk/comparators";
+import { Compare, Gen, Lazy, Sorted } from "../coreTypes";
+
 import { lazyfy } from "../funk/lazyfy";
 import { nrgz } from "../funk/nrgz";
 
-function* _sortedDistinct<E>(sz: Sorted<E>, cmp: Compare<E>): Gen<E> {
-  const sit = nrgz(sz);
-
-  let nx = sit.next();
-
-  let lEl: E | $MinType = $min;
-
-  for (; !nx.done; nx = sit.next()) {
-    const el = nx.value;
-    if (cmpSentinelMin(lEl, el, cmp) >= 0) continue;
-    yield (lEl = el);
+function* _sortedDistinct<E>(sz: Lazy<E>, cmp: Compare<E>): Gen<E> {
+  const sIt = nrgz(sz);
+  for (let nx = sIt.next(), rep: E; !nx.done; ) {
+    yield (rep = nx.value);
+    for (; !nx.done; nx = sIt.next()) if (cmp(rep, nx.value) < 0) break;
   }
 }
 

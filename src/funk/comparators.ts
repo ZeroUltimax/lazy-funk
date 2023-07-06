@@ -20,11 +20,3 @@ export const cmpBy =
   <E, K>(selector: Selector<E, K>, keyCmp: Compare<K> = cmpNatural) =>
   (a: E, b: E) =>
     keyCmp(selector(a), selector(b));
-
-export const $min = Symbol("min");
-export type $MinType = typeof $min;
-
-export function cmpSentinelMin<E>(a: E | $MinType, b: E, cmp: Compare<E>) {
-  if (a === $min) return -1;
-  return cmp(a, b);
-}
