@@ -1,159 +1,59 @@
-import { Compare, Gen, Sorted } from "../coreTypes";
-import { $min, $MinType, cmpSentinelMin } from "../funk/comparators";
+import { Gen, Lazy, Sorted } from "../coreTypes";
 import { lazyfy } from "../funk/lazyfy";
 import { nrgz } from "../funk/nrgz";
-import { throws } from "../funk/throws";
+import { SortedSetOperations } from "../iterables/SortedSetOperations";
+import {
+  sortedFullGroupJoin,
+  sortedGroupJoin,
+  sortedLeftGroupJoin,
+} from "./sortedGroupJoin";
 
-function* _sortedUnion<E>(
-  sza: Sorted<E>,
-  szb: Sorted<E>,
-  cmp: Compare<E>
-): Gen<E> {
-  const sItA = nrgz(sza);
-  const sItB = nrgz(szb);
-
-  let nxA = sItA.next();
-  let nxB = sItB.next();
-
-  let lEl: E | $MinType = $min;
-
-  outer: for (; !nxA.done; nxA = sItA.next()) {
-    const elA = nxA.value;
-    if (cmpSentinelMin(lEl, elA, cmp) >= 0) continue outer;
-    inner: for (; !nxB.done; nxB = sItB.next()) {
-      const elB = nxB.value;
-      if (cmpSentinelMin(lEl, elB, cmp) >= 0) continue inner;
-      if (cmp(elA, elB) <= 0) {
-        yield (lEl = elA);
-        continue outer;
-      }
-      yield (lEl = elB);
-    }
-    // Important to not advance sItA if nxB.done so out flush loop can handle it
-    if (nxB.done) break outer;
-  }
-
-  for (; !nxA.done; nxA = sItA.next()) {
-    const elA = nxA.value;
-    if (cmpSentinelMin(lEl, elA, cmp) >= 0) continue;
-    yield (lEl = elA);
-  }
-
-  for (; !nxB.done; nxB = sItB.next()) {
-    const elB = nxB.value;
-    if (cmpSentinelMin(lEl, elB, cmp) >= 0) continue;
-    yield (lEl = elB);
-  }
+// Forcibly pull the first element of a lazy know to have at least one entry
+function rep<E>(z: Lazy<E>): E {
+  const it = nrgz(z);
+  const nx = it.next() as IteratorYieldResult<E>;
+  return nx.value;
 }
 
-export function sortedUnion<E>(sza: Sorted<E>, szb: Sorted<E>): Sorted<E> {
-  const { cmp: cmpa } = sza;
-  const { cmp: cmpb } = szb;
-  if (cmpa !== cmpb) return throws("Different compares");
-  const cmp = cmpa;
-  return Object.assign(
-    lazyfy(() => _sortedUnion(sza, szb, cmp)),
-    { cmp }
-  );
+const unionGroupSelector = <E>(a: Lazy<E> | null, b: Lazy<E> | null): E =>
+  rep(a || b!);
+
+export const sortedUnion = <E>(sza: Sorted<E>, szb: Sorted<E>) =>
+  sortedFullGroupJoin(sza, szb, unionGroupSelector);
+
+const intersectionGroupSelector = <E>(a: Lazy<E>): E => rep(a);
+
+export const sortedIntersection = <E>(sza: Sorted<E>, szb: Sorted<E>) =>
+  sortedGroupJoin(sza, szb, intersectionGroupSelector);
+
+interface LeftGroupResultSelector<E> {
+  a: Lazy<E>;
+  b: Lazy<E> | null;
 }
 
-function* _sortedIntersection<E>(
-  sza: Sorted<E>,
-  szb: Sorted<E>,
-  cmp: Compare<E>
-): Gen<E> {
-  const sItA = nrgz(sza);
-  const sItB = nrgz(szb);
-
-  let nxA = sItA.next();
-  let nxB = sItB.next();
-
-  let lEl: E | $MinType = $min;
-
-  outer: for (; !nxA.done; nxA = sItA.next()) {
-    const elA = nxA.value;
-    if (cmpSentinelMin(lEl, elA, cmp) >= 0) continue outer;
-    inner: for (; !nxB.done; nxB = sItB.next()) {
-      const elB = nxB.value;
-      if (cmpSentinelMin(lEl, elB, cmp) >= 0) continue inner;
-      const cmpRes = cmp(elA, elB);
-      if (cmpRes < 0) {
-        lEl = elA;
-        continue outer;
-      }
-      if (cmpRes === 0) {
-        yield (lEl = elA);
-        continue outer;
-      }
-      lEl = elB;
-    }
-    // Important to not advance sItA if nxB.done so out flush loop can handle it
-    if (nxB.done) break outer;
-  }
+function differenceGroupSelector<E>(
+  a: Lazy<E>,
+  b: Lazy<E> | null
+): LeftGroupResultSelector<E> {
+  return { a, b };
 }
 
-export function sortedIntersection<E>(
-  sza: Sorted<E>,
-  szb: Sorted<E>
-): Sorted<E> {
-  const { cmp: cmpa } = sza;
-  const { cmp: cmpb } = szb;
-  if (cmpa !== cmpb) return throws("Different compares");
-  const cmp = cmpa;
-  return Object.assign(
-    lazyfy(() => _sortedIntersection(sza, szb, cmp)),
-    { cmp }
-  );
+function* _sortedDifference<E>(zg: Lazy<LeftGroupResultSelector<E>>): Gen<E> {
+  for (const { a, b } of zg) if (!b) yield rep(a);
 }
 
-function* _sortedDifference<E>(
-  sza: Sorted<E>,
-  szb: Sorted<E>,
-  cmp: Compare<E>
-): Gen<E> {
-  const sItA = nrgz(sza);
-  const sItB = nrgz(szb);
-
-  let nxA = sItA.next();
-  let nxB = sItB.next();
-
-  let lEl: E | $MinType = $min;
-
-  outer: for (; !nxA.done; nxA = sItA.next()) {
-    const elA = nxA.value;
-    if (cmpSentinelMin(lEl, elA, cmp) >= 0) continue outer;
-    inner: for (; !nxB.done; nxB = sItB.next()) {
-      const elB = nxB.value;
-      if (cmpSentinelMin(lEl, elB, cmp) >= 0) continue inner;
-      const cmpRes = cmp(elA, elB);
-      if (cmpRes < 0) {
-        yield (lEl = elA);
-        continue outer;
-      }
-      if (cmpRes === 0) {
-        lEl = elA;
-        continue outer;
-      }
-      lEl = elB;
-    }
-    // Important to not advance sItA if nxB.done so out flush loop can handle it
-    if (nxB.done) break outer;
-  }
-
-  for (; !nxA.done; nxA = sItA.next()) {
-    const elA = nxA.value;
-    if (cmpSentinelMin(lEl, elA, cmp) >= 0) continue;
-    yield (lEl = elA);
-  }
+export function sortedDifference<E>(sza: Sorted<E>, szb: Sorted<E>) {
+  const zg = sortedLeftGroupJoin(sza, szb, differenceGroupSelector);
+  return lazyfy(() => _sortedDifference(zg));
 }
 
-export function sortedDifference<E>(sza: Sorted<E>, szb: Sorted<E>): Sorted<E> {
-  const { cmp: cmpa } = sza;
-  const { cmp: cmpb } = szb;
-  if (cmpa !== cmpb) return throws("Different compares");
-  const cmp = cmpa;
-  return Object.assign(
-    lazyfy(() => _sortedDifference(sza, szb, cmp)),
-    { cmp }
-  );
+export function sortedSetOperations<E>(sza: Sorted<E>, szb: Sorted<E>) {
+  const sso = SortedSetOperations.FromSorted(sza, szb);
+
+  return {
+    union: lazyfy(() => sso.iter("full")),
+    intersection: lazyfy(() => sso.iter("inner")),
+    aMinusB: lazyfy(() => sso.iter("left")),
+    bMinusA: lazyfy(() => sso.iter("right")),
+  };
 }
