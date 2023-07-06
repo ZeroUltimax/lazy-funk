@@ -1,6 +1,6 @@
 import { Accumulator, Lazy, Seed } from "../coreTypes";
 import { scan } from "../operators/scan";
-import { last } from "./last";
+import { last } from "./pick";
 
 export function fold<E>(z: Lazy<E>, acc: Accumulator<E, E>, seed?: Seed<E>): E;
 export function fold<E, A>(
