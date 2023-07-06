@@ -1,4 +1,4 @@
-import { Lazy, Seed, Selector, Sorted, Zipper } from "../coreTypes";
+import { Gen, Lazy, Seed, Selector, Sorted, Zipper } from "../coreTypes";
 import { lazyfy, lazyfyFunk } from "../funk/lazyfy";
 import { throws } from "../funk/throws";
 import {
@@ -33,7 +33,7 @@ function rawGroupSelector<E, Ad, Bd>(
 function* _sortedJoin<E, R>(
   zg: Lazy<RawGroupResult<E, never, never>>,
   rSel: SortedResultSelector<E, never, never, R>
-) {
+): Gen<R> {
   for (const g of zg)
     for (const a of g.a) for (const b of g.b) yield rSel(a, b);
 }
@@ -51,7 +51,7 @@ function* _sortedLeftJoin<E, Bd, R>(
   zg: Lazy<RawGroupResult<E, never, null>>,
   defaultB: Seed<Bd>,
   rSel: SortedResultSelector<E, never, Bd, R>
-) {
+): Gen<R> {
   for (const g of zg)
     for (const a of g.a)
       if (g.b) for (const b of g.b) yield rSel(a, b);
@@ -92,7 +92,7 @@ function* _sortedFullJoin<E, Ad, Bd, R>(
   defaultA: Seed<Ad>,
   defaultB: Seed<Bd>,
   rSel: SortedResultSelector<E, Ad, Bd, R>
-) {
+): Gen<R> {
   for (const g of zg)
     if (g.a)
       for (const a of g.a)

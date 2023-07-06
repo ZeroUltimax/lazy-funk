@@ -1,4 +1,4 @@
-import { Lazy, Selector } from "../coreTypes";
+import { Gen, Lazy, Selector } from "../coreTypes";
 import { id } from "../funk/id";
 import { lazyfy } from "../funk/lazyfy";
 import { MemoKeyedIterator } from "../iterables/MemoKeyedIterator";
@@ -10,7 +10,7 @@ const getRepresentant = <E, K>(iter: MemoKeyedIterator<E, K>, key: K): E =>
 function* _union<E, K>(
   iterA: MemoKeyedIterator<E, K>,
   iterB: MemoKeyedIterator<E, K>
-) {
+): Gen<E> {
   for (const keyA of iterA.iterateKeys()) yield getRepresentant(iterA, keyA);
   for (const keyB of iterB.iterateKeys())
     if (!iterA.containsKey(keyB)) yield getRepresentant(iterB, keyB);
@@ -19,7 +19,7 @@ function* _union<E, K>(
 function* _intersection<E, K>(
   iterA: MemoKeyedIterator<E, K>,
   iterB: MemoKeyedIterator<E, K>
-) {
+): Gen<E> {
   for (const keyA of iterA.iterateKeys())
     if (iterB.containsKey(keyA)) yield getRepresentant(iterA, keyA);
 }
@@ -27,7 +27,7 @@ function* _intersection<E, K>(
 function* _diff<E, K>(
   iterA: MemoKeyedIterator<E, K>,
   iterB: MemoKeyedIterator<E, K>
-) {
+): Gen<E> {
   for (const keyA of iterA.iterateKeys())
     if (!iterB.containsKey(keyA)) yield getRepresentant(iterA, keyA);
 }

@@ -1,4 +1,4 @@
-import { Lazy, Seed, Selector, Zipper } from "../coreTypes";
+import { Gen, Lazy, Seed, Selector } from "../coreTypes";
 import { lazyfyFunk } from "../funk/lazyfy";
 import { fullGroupJoin, groupJoin, leftGroupJoin } from "./groupJoin";
 
@@ -27,7 +27,7 @@ function* _join<A, B, K, R>(
   selA: Selector<A, K>,
   selB: Selector<B, K>,
   rSel: ResultSelector<A, never, B, never, K, R>
-) {
+): Gen<R> {
   const joins = groupJoin(za, zb, selA, selB, rawGroupSelector);
   for (const j of joins)
     for (const a of j.a) for (const b of j.b) yield rSel(a, b, j.k);
@@ -42,7 +42,7 @@ function* _leftJoin<A, B, Bd, K, R>(
   selB: Selector<B, K>,
   defaultB: Seed<Bd>,
   rSel: ResultSelector<A, never, B, Bd, K, R>
-) {
+): Gen<R> {
   const joins = leftGroupJoin(za, zb, selA, selB, rawGroupSelector);
   for (const j of joins)
     for (const a of j.a)
@@ -85,7 +85,7 @@ function* _fullJoin<A, Ad, B, Bd, K, R>(
   defaultA: Seed<Ad>,
   defaultB: Seed<Bd>,
   rSel: ResultSelector<A, Ad, B, Bd, K, R>
-) {
+): Gen<R> {
   const joins = fullGroupJoin(za, zb, selA, selB, rawGroupSelector);
   for (const j of joins)
     if (j.a)

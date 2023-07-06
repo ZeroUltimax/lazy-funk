@@ -77,8 +77,9 @@ describe("Memo Keyed Iterator", () => {
   });
 
   it("Iterates Minimally", () => {
-    const it = nrgz([-1, 0, 1, 2]);
-    const ops = new MemoKeyedIterator(it, id);
+    const ops = MemoKeyedIterator.FromLazy([-1, 0, 1, 2], id);
+    const it = (ops as any).it;
+    expect(it).not.toBeUndefined();
     const containsKey1 = ops.containsKey(1);
     const nxb = it.next();
     expect(nxb.done).toEqual(false);

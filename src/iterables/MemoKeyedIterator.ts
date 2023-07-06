@@ -9,7 +9,7 @@ export class MemoKeyedIterator<E, K> {
   static FromLazy<E, K>(z: Lazy<E>, sel: Selector<E, K>) {
     return new MemoKeyedIterator(nrgz(z), sel);
   }
-  constructor(private it: Iterator<E>, private sel: Selector<E, K>) {}
+  private constructor(private it: Iterator<E>, private sel: Selector<E, K>) {}
 
   public *iterateKeys(): Generator<K> {
     const { keys } = this;
