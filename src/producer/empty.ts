@@ -1,5 +1,5 @@
 import { Gen } from "../coreTypes";
-import { lazyfyFunk } from "../funk/lazyfy";
+import { lazyfy } from "../funk/lazyfy";
 
 function* _empty<E>(): Gen<E> {}
-export const empty = lazyfyFunk(_empty);
+export const empty = lazyfy(_empty);

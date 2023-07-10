@@ -229,7 +229,7 @@ export function sortedGroupJoin<E, R>(
   rSel: SortedGroupResultSelector<E, never, never, R>
 ): Lazy<R> {
   const cmp = _getCommonCompare(sza, szb);
-  return lazyfy(() => _innerGroupJoin(sza, szb, rSel, cmp));
+  return lazyfy(_innerGroupJoin)(sza, szb, rSel, cmp);
 }
 
 export function sortedLeftGroupJoinWithDefault<E, Bd, R>(
@@ -239,7 +239,7 @@ export function sortedLeftGroupJoinWithDefault<E, Bd, R>(
   rSel: SortedGroupResultSelector<E, never, Bd, R>
 ): Lazy<R> {
   const cmp = _getCommonCompare(sza, szb);
-  return lazyfy(() => _halfGroupJoin(sza, szb, defaultB, rSel, cmp));
+  return lazyfy(_halfGroupJoin)(sza, szb, defaultB, rSel, cmp);
 }
 
 export const sortedLeftGroupJoin = <E, R>(
@@ -269,7 +269,7 @@ export function sortedFullGroupJoinWithDefault<E, Ad, Bd, R>(
   rSel: SortedGroupResultSelector<E, Ad, Bd, R>
 ): Lazy<R> {
   const cmp = _getCommonCompare(sza, szb);
-  return lazyfy(() => _fullGroupJoin(sza, defaultA, szb, defaultB, rSel, cmp));
+  return lazyfy(_fullGroupJoin)(sza, defaultA, szb, defaultB, rSel, cmp);
 }
 
 export const sortedFullGroupJoin = <E, R>(

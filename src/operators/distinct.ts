@@ -13,6 +13,6 @@ function* _distinct<E, K>(iter: MemoKeyedIterator<E, K>) {
 
 export function distinctBy<E, K>(z: Lazy<E>, sel: Selector<E, K>) {
   const iter = MemoKeyedIterator.FromLazy(z, sel);
-  return lazyfy(() => _distinct(iter));
+  return lazyfy(_distinct)(iter);
 }
 export const distinct = <E>(z: Lazy<E>) => distinctBy(z, id);

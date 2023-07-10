@@ -44,16 +44,16 @@ function* _sortedDifference<E>(zg: Lazy<LeftGroupResultSelector<E>>): Gen<E> {
 
 export function sortedDifference<E>(sza: Sorted<E>, szb: Sorted<E>) {
   const zg = sortedLeftGroupJoin(sza, szb, differenceGroupSelector);
-  return lazyfy(() => _sortedDifference(zg));
+  return lazyfy(_sortedDifference)(zg);
 }
 
 export function sortedSetOperations<E>(sza: Sorted<E>, szb: Sorted<E>) {
   const sso = SortedSetOperations.FromSorted(sza, szb);
 
   return {
-    union: lazyfy(() => sso.iter("full")),
-    intersection: lazyfy(() => sso.iter("inner")),
-    aMinusB: lazyfy(() => sso.iter("left")),
-    bMinusA: lazyfy(() => sso.iter("right")),
+    union: lazyfy(sso.iter.bind(sso))("full"),
+    intersection: lazyfy(sso.iter.bind(sso))("inner"),
+    aMinusB: lazyfy(sso.iter.bind(sso))("left"),
+    bMinusA: lazyfy(sso.iter.bind(sso))("right"),
   };
 }

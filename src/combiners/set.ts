@@ -41,10 +41,10 @@ export function setOperationsBy<E, K>(
   const iterB = MemoKeyedIterator.FromLazy(zb, sel);
 
   return {
-    union: lazyfy(() => _union(iterA, iterB)),
-    intersection: lazyfy(() => _intersection(iterA, iterB)),
-    aMinusB: lazyfy(() => _diff(iterA, iterB)),
-    bMinusA: lazyfy(() => _diff(iterB, iterA)),
+    union: lazyfy(_union)(iterA, iterB),
+    intersection: lazyfy(_intersection)(iterA, iterB),
+    aMinusB: lazyfy(_diff)(iterA, iterB),
+    bMinusA: lazyfy(_diff)(iterB, iterA),
   };
 }
 

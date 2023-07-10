@@ -1,5 +1,5 @@
 import { Gen, Lazy, Seed, Selector } from "../coreTypes";
-import { lazyfyFunk } from "../funk/lazyfy";
+import { lazyfy } from "../funk/lazyfy";
 import { fullGroupJoin, groupJoin, leftGroupJoin } from "./groupJoin";
 
 type ResultSelector<A, Ad, B, Bd, K, R> = (a: A | Ad, b: B | Bd, key: K) => R;
@@ -33,7 +33,7 @@ function* _join<A, B, K, R>(
     for (const a of j.a) for (const b of j.b) yield rSel(a, b, j.k);
 }
 
-export const join = lazyfyFunk(_join);
+export const join = lazyfy(_join);
 
 function* _leftJoin<A, B, Bd, K, R>(
   za: Lazy<A>,
@@ -50,7 +50,7 @@ function* _leftJoin<A, B, Bd, K, R>(
       else yield rSel(a, defaultB(), j.k);
 }
 
-export const leftJoinWithDefault = lazyfyFunk(_leftJoin);
+export const leftJoinWithDefault = lazyfy(_leftJoin);
 
 export const leftJoin = <A, B, K, R>(
   za: Lazy<A>,
@@ -95,7 +95,7 @@ function* _fullJoin<A, Ad, B, Bd, K, R>(
     else for (const b of j.b!) yield rSel(defaultA(), b, j.k);
 }
 
-export const fullJoinWithDefault = lazyfyFunk(_fullJoin);
+export const fullJoinWithDefault = lazyfy(_fullJoin);
 
 export const fullJoin = <A, B, K, R>(
   za: Lazy<A>,

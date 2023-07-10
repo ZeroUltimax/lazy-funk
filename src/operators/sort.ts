@@ -170,16 +170,10 @@ function* _sort<E>(z: Lazy<E>, cmp: Compare<E>): Gen<E> {
 }
 
 export const sort = <E>(z: Lazy<E>, cmp: Compare<E>): Sorted<E> =>
-  Object.assign(
-    lazyfy(() => _sort(z, cmp)),
-    { cmp }
-  );
+  Object.assign(lazyfy(_sort)(z, cmp), { cmp });
 
 export function asSorted<E>(z: Lazy<E>, cmp: Compare<E>): Sorted<E> {
-  return Object.assign(
-    lazyfy(() => nrgz(z)),
-    { cmp }
-  );
+  return Object.assign(lazyfy(nrgz)(z), { cmp });
 }
 
 function* _assertSorted<E>(z: Lazy<E>, cmp: Compare<E>): Gen<E> {
@@ -197,9 +191,6 @@ function* _assertSorted<E>(z: Lazy<E>, cmp: Compare<E>): Gen<E> {
 }
 
 export const assertSorted = <E>(z: Lazy<E>, cmp: Compare<E>) =>
-  Object.assign(
-    lazyfy(() => _assertSorted(z, cmp)),
-    { cmp }
-  );
+  Object.assign(lazyfy(_assertSorted)(z, cmp), { cmp });
 
 export const __TEST_ONLY__ = { _heapSort };

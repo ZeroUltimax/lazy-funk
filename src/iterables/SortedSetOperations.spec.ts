@@ -12,7 +12,7 @@ describe("Sorted Set Operations Iterator", () => {
       if (itered) throw new Error("Iterated more that once");
       itered = true;
       return nrgz(z);
-    });
+    })();
   };
 
   it("Iterates all values", () => {

@@ -11,7 +11,7 @@ describe("Memo Keyed Iterator", () => {
       if (itered) throw new Error("Iterated more that once");
       itered = true;
       return nrgz(z);
-    });
+    })();
   };
 
   const numbers = [0, 1, 2, 3, 4, 5];

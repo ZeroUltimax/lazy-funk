@@ -1,6 +1,5 @@
-import { Gen, Lazy, Seed, Selector, Sorted, Zipper } from "../coreTypes";
-import { lazyfy, lazyfyFunk } from "../funk/lazyfy";
-import { throws } from "../funk/throws";
+import { Gen, Lazy, Seed, Sorted } from "../coreTypes";
+import { lazyfy } from "../funk/lazyfy";
 import {
   sortedGroupJoin,
   sortedLeftGroupJoin,
@@ -44,7 +43,7 @@ export function sortedJoin<E, R>(
   rSel: SortedResultSelector<E, never, never, R>
 ) {
   const zg = sortedGroupJoin(sza, szb, rawGroupSelector<E, never, never>);
-  return lazyfy(() => _sortedJoin(zg, rSel));
+  return lazyfy(_sortedJoin)(zg, rSel);
 }
 
 function* _sortedLeftJoin<E, Bd, R>(
@@ -65,7 +64,7 @@ export function sortedLeftJoinWithDefault<E, Bd, R>(
   rSel: SortedResultSelector<E, never, Bd, R>
 ) {
   const zg = sortedLeftGroupJoin(sza, szb, rawGroupSelector<E, never, null>);
-  return lazyfy(() => _sortedLeftJoin(zg, defaultB, rSel));
+  return lazyfy(_sortedLeftJoin)(zg, defaultB, rSel);
 }
 
 export const sortedLeftJoin = <E, R>(
@@ -109,7 +108,7 @@ export function sortedFullJoinWithDefault<E, Ad, Bd, R>(
   rSel: SortedResultSelector<E, Ad, Bd, R>
 ) {
   const zg = sortedFullGroupJoin(sza, szb, rawGroupSelector<E, null, null>);
-  return lazyfy(() => _sortedFullJoin(zg, defaultA, defaultB, rSel));
+  return lazyfy(_sortedFullJoin)(zg, defaultA, defaultB, rSel);
 }
 
 export const sortedFullJoin = <E, R>(

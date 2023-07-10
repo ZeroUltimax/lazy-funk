@@ -12,8 +12,7 @@ function* _sortedDistinct<E>(sz: Lazy<E>, cmp: Compare<E>): Gen<E> {
 }
 
 export function sortedDistinct<E>(sz: Sorted<E>): Sorted<E> {
-  return Object.assign(
-    lazyfy(() => _sortedDistinct(sz, sz.cmp)),
-    { cmp: sz.cmp }
-  );
+  return Object.assign(lazyfy(_sortedDistinct)(sz, sz.cmp), {
+    cmp: sz.cmp,
+  });
 }

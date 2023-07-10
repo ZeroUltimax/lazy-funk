@@ -68,9 +68,9 @@ export class MemoKeyedIterator<E, K> {
 }
 
 export function lazyKeys<E, K>(iter: MemoKeyedIterator<E, K>) {
-  return lazyfy(() => iter.iterateKeys());
+  return lazyfy(iter.iterateKeys.bind(iter))();
 }
 
 export function lazyValues<E, K>(iter: MemoKeyedIterator<E, K>, key: K) {
-  return lazyfy(() => iter.iterateValues(key));
+  return lazyfy(iter.iterateValues.bind(iter))(key);
 }

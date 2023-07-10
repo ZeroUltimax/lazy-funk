@@ -1,5 +1,5 @@
 import { Count, Gen, Lazy, Predicate } from "../coreTypes";
-import { lazyfyFunk } from "../funk/lazyfy";
+import { lazyfy } from "../funk/lazyfy";
 import { nrgz } from "../funk/nrgz";
 
 function* _drop<E>(z: Lazy<E>, count: Count): Gen<E> {
@@ -10,7 +10,7 @@ function* _drop<E>(z: Lazy<E>, count: Count): Gen<E> {
   }
 }
 
-export const drop = lazyfyFunk(_drop);
+export const drop = lazyfy(_drop);
 
 function* _dropWhile<E>(z: Lazy<E>, pred: Predicate<E>): Gen<E> {
   const it = nrgz(z);
@@ -25,4 +25,4 @@ function* _dropWhile<E>(z: Lazy<E>, pred: Predicate<E>): Gen<E> {
   }
 }
 
-export const dropWhile = lazyfyFunk(_dropWhile);
+export const dropWhile = lazyfy(_dropWhile);

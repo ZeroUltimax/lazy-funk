@@ -13,7 +13,7 @@ function* _groups<E, K>(iter: MemoKeyedIterator<E, K>) {
 
 export function groupBy<E, K>(z: Lazy<E>, sel: Selector<E, K>) {
   const iter = MemoKeyedIterator.FromLazy(z, sel);
-  return lazyfy(() => _groups(iter));
+  return lazyfy(_groups)(iter);
 }
 
 export function partition<E>(

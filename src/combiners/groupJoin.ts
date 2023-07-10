@@ -65,7 +65,7 @@ export function groupJoin<A, B, K, R>(
 ) {
   const iterA = MemoKeyedIterator.FromLazy(za, selA);
   const iterB = MemoKeyedIterator.FromLazy(zb, selB);
-  return lazyfy(() => _innerGroupJoin(iterA, iterB, rSel));
+  return lazyfy(_innerGroupJoin)(iterA, iterB, rSel);
 }
 
 export function leftGroupJoinWithDefault<A, B, Bd, K, R>(
@@ -78,7 +78,7 @@ export function leftGroupJoinWithDefault<A, B, Bd, K, R>(
 ) {
   const iterA = MemoKeyedIterator.FromLazy(za, selA);
   const iterB = MemoKeyedIterator.FromLazy(zb, selB);
-  return lazyfy(() => _halfGroupJoin(iterA, iterB, defaultB, rSel));
+  return lazyfy(_halfGroupJoin)(iterA, iterB, defaultB, rSel);
 }
 
 export const leftGroupJoin = <A, B, K, R>(
@@ -117,7 +117,7 @@ export function fullGroupJoinWithDefault<A, Ad, B, Bd, K, R>(
 ) {
   const iterA = MemoKeyedIterator.FromLazy(za, selA);
   const iterB = MemoKeyedIterator.FromLazy(zb, selB);
-  return lazyfy(() => _fullGroupJoin(iterA, defaultA, iterB, defaultB, rSel));
+  return lazyfy(_fullGroupJoin)(iterA, defaultA, iterB, defaultB, rSel);
 }
 
 export const fullGroupJoin = <A, B, K, R>(

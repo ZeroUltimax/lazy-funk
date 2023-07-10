@@ -47,10 +47,11 @@ export function scan<E, A = E, S extends Seed<A> = Seed<A>>(
   seed?: S
 ): Lazy<A> {
   if (seed) {
-    return lazyfy(() => _scanSeeded(z, acc, seed));
+    return lazyfy(_scanSeeded)(z, acc, seed);
   } else {
-    return lazyfy(() =>
-      _scanSeedless(z, acc as unknown as Accumulator<E, E>)
+    return lazyfy(_scanSeedless)(
+      z,
+      acc as unknown as Accumulator<E, E>
     ) as unknown as Lazy<A>;
   }
 }
