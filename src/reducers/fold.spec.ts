@@ -1,5 +1,5 @@
 import { empty } from "../producer/empty";
-import { fold } from "./fold";
+import { fold, foldSeedless } from "./fold";
 
 describe("Fold", () => {
   it("Reduces the input", () => {
@@ -11,11 +11,13 @@ describe("Fold", () => {
     const expected = "0,1,2,3,4";
     expect(actual).toEqual(expected);
   });
+});
 
+describe("Fold Seedless", () => {
   it("Seeds from first item", () => {
     const input = [1, 2, 3, 4];
     const acc = (acc: number, el: number) => acc + el;
-    const actual = fold(input, acc);
+    const actual = foldSeedless(input, acc);
     const expected = 10;
     expect(actual).toEqual(expected);
   });
@@ -24,6 +26,6 @@ describe("Fold", () => {
     const input = empty<number>();
     const acc = (acc: number, el: number) => acc + el;
 
-    expect(() => fold(input, acc)).toThrow();
+    expect(() => foldSeedless(input, acc)).toThrow();
   });
 });

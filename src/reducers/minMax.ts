@@ -1,26 +1,58 @@
 import { Compare, Lazy, Seed, Selector } from "../coreTypes";
 import { cmpInverse, cmpNatural, cmpNum } from "../funk/comparators";
 import { id } from "../funk/id";
+import { lazyfy } from "../funk/lazyfy";
+import { nrgz } from "../funk/nrgz";
+import { throws } from "../funk/throws";
 import { fold } from "./fold";
 
-const accMinBy =
-  <E, K>(sel: Selector<E, K>, keyCmp: Compare<K>) =>
-  (acc: E, el: E) =>
-    keyCmp(sel(acc), sel(el)) < 0 ? acc : el;
+const noElementThrowsSeed = () => throws("No elements");
+
+export function minOrDefaultBy<E, D, K>(
+  z: Lazy<E>,
+  sel: Selector<E, K>,
+  keyCmp: Compare<K>,
+  def: Seed<D>
+): E | D {
+  const it = nrgz(z);
+  let nx = it.next();
+  if (nx.done) return def();
+  let min = nx.value;
+  let minKey = sel(min);
+  for (nx = it.next(); !nx.done; nx = it.next()) {
+    const el = nx.value;
+    const key = sel(el);
+    const cmpRes = keyCmp(minKey, key);
+    if (cmpRes > 0) {
+      min = el;
+      minKey = key;
+    }
+  }
+  return min;
+}
+
 export const minBy = <E, K>(
   z: Lazy<E>,
   sel: Selector<E, K>,
-  keyCmp: Compare<K> = cmpNatural,
-  def?: Seed<E>
-) => fold(z, accMinBy(sel, keyCmp), def);
-const seedMin: Seed<number> = () => Number.POSITIVE_INFINITY;
-export const min = (z: Lazy<number>) => minBy(z, id, cmpNum, seedMin);
+  keyCmp: Compare<K>
+): E => minOrDefaultBy(z, sel, keyCmp, noElementThrowsSeed);
+export const minOrDefault = <D>(z: Lazy<number>, def: Seed<D>): number | D =>
+  minOrDefaultBy(z, id, cmpNum, def);
+export const min = (z: Lazy<number>): number =>
+  minOrDefaultBy(z, id, cmpNum, noElementThrowsSeed);
 
+export const maxOrDefaultBy = <E, D, K>(
+  z: Lazy<E>,
+  sel: Selector<E, K>,
+  keyCmp: Compare<K>,
+  def: Seed<D>
+): E | D => minOrDefaultBy(z, sel, cmpInverse(keyCmp), def);
 export const maxBy = <E, K>(
   z: Lazy<E>,
   sel: Selector<E, K>,
-  keyCmp: Compare<K> = cmpNatural,
-  def?: Seed<E>
-) => fold(z, accMinBy(sel, cmpInverse(keyCmp)), def);
-const seedMax: Seed<number> = () => Number.NEGATIVE_INFINITY;
-export const max = (z: Lazy<number>) => maxBy(z, id, cmpNum, seedMax);
+  keyCmp: Compare<K>
+): E => minOrDefaultBy(z, sel, cmpInverse(keyCmp), noElementThrowsSeed);
+export const maxOrDefault = <D>(z: Lazy<number>, def: Seed<D>): number | D =>
+  minOrDefaultBy(z, id, cmpInverse(cmpNum), def);
+export const max = (z: Lazy<number>): number =>
+  minOrDefaultBy(z, id, cmpInverse(cmpNum), noElementThrowsSeed);
