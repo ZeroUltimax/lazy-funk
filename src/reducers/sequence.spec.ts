@@ -1,7 +1,6 @@
 import { empty } from "../producer/empty";
 import { range } from "../producer/range";
-import { count } from "./count";
-import { contains, isEmpty } from "./sequence";
+import { contains, count, isEmpty } from "./sequence";
 
 describe("Sequence", () => {
   it("Counts entries", () => {
