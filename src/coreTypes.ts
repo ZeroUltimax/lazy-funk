@@ -53,7 +53,7 @@ export type LazyProducer<A extends any[], E> /* prod */ = (
   ...args: A
 ) => Lazy<E>;
 
-// Does something to createa new genenrator
+// Does something to create a new genenrator
 export type GenOperator<A extends any[], E, F> /* _op */ = (
   z: Lazy<E>,
   ...args: A
@@ -65,8 +65,20 @@ export type LazyOperator<A extends any[], E, F> /* op */ = (
   ...args: A
 ) => Lazy<F>;
 
+export type CurriedLazyOperator<A extends any[], E, F> /* cOp */ = (
+  ...args: A
+) => (z: Lazy<E>) => Lazy<F>;
+
+export type AppliedLazyOperator<E, F> /* aOp */ = (z: Lazy<E>) => Lazy<F>;
+
 // Transforms a lazy into a finalized value
-export type LazyReducer<A extends any[], T, R> /* red */ = (
-  z: Lazy<T>,
+export type LazyReducer<A extends any[], E, R> /* red */ = (
+  z: Lazy<E>,
   ...args: A
 ) => R;
+
+export type CurriedLazyReducer<A extends any[], E, R> /* cRed */ = (
+  ...args: A
+) => (z: Lazy<E>) => R;
+
+export type AppliedLazyReducer<E, R> /* aRed */ = (z: Lazy<E>) => R;
