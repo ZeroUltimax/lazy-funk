@@ -1,19 +1,21 @@
-import { Gen, Lazy, Selector } from "../coreTypes";
+import {
+  Gen,
+  Lazy,
+  LazyCombiner,
+  LazyCombinerReducer,
+  Selector,
+} from "../coreTypes";
 import { id } from "../funk/id";
 import { lazyfy } from "../funk/lazyfy";
-import { MemoKeyedIterator } from "../iterables/MemoKeyedIterator";
-
-// This only works as long as we don't insert meaningless keys into iter by calling iterateValues with non-keys
-const getRepresentant = <E, K>(iter: MemoKeyedIterator<E, K>, key: K): E =>
-  iter.iterateValues(key).next().value;
+import { MemoKeyedIterator, repMemo } from "../iterables/MemoKeyedIterator";
 
 function* _union<E, K>(
   iterA: MemoKeyedIterator<E, K>,
   iterB: MemoKeyedIterator<E, K>
 ): Gen<E> {
-  for (const keyA of iterA.iterateKeys()) yield getRepresentant(iterA, keyA);
+  for (const keyA of iterA.iterateKeys()) yield repMemo(iterA, keyA);
   for (const keyB of iterB.iterateKeys())
-    if (!iterA.containsKey(keyB)) yield getRepresentant(iterB, keyB);
+    if (!iterA.containsKey(keyB)) yield repMemo(iterB, keyB);
 }
 
 function* _intersection<E, K>(
@@ -21,7 +23,7 @@ function* _intersection<E, K>(
   iterB: MemoKeyedIterator<E, K>
 ): Gen<E> {
   for (const keyA of iterA.iterateKeys())
-    if (iterB.containsKey(keyA)) yield getRepresentant(iterA, keyA);
+    if (iterB.containsKey(keyA)) yield repMemo(iterA, keyA);
 }
 
 function* _diff<E, K>(
@@ -29,48 +31,54 @@ function* _diff<E, K>(
   iterB: MemoKeyedIterator<E, K>
 ): Gen<E> {
   for (const keyA of iterA.iterateKeys())
-    if (!iterB.containsKey(keyA)) yield getRepresentant(iterA, keyA);
+    if (!iterB.containsKey(keyA)) yield repMemo(iterA, keyA);
 }
 
-export function setOperationsBy<E, K>(
-  za: Lazy<E>,
-  zb: Lazy<E>,
-  sel: Selector<E, K>
-) {
-  const iterA = MemoKeyedIterator.FromLazy(za, sel);
-  const iterB = MemoKeyedIterator.FromLazy(zb, sel);
+interface SetOperations<E> {
+  union: Lazy<E>;
+  intersection: Lazy<E>;
+  aMinusB: Lazy<E>;
+  bMinusA: Lazy<E>;
+}
 
-  return {
-    union: lazyfy(_union)(iterA, iterB),
-    intersection: lazyfy(_intersection)(iterA, iterB),
-    aMinusB: lazyfy(_diff)(iterA, iterB),
-    bMinusA: lazyfy(_diff)(iterB, iterA),
+export const setOperationsBy =
+  <E, K>(sel: Selector<E, K>): LazyCombinerReducer<E, E, SetOperations<E>> =>
+  (zb) => {
+    const iterB = MemoKeyedIterator.FromLazy(zb, sel);
+    return (za) => {
+      const iterA = MemoKeyedIterator.FromLazy(za, sel);
+      return {
+        union: lazyfy(_union)(iterA, iterB),
+        intersection: lazyfy(_intersection)(iterA, iterB),
+        aMinusB: lazyfy(_diff)(iterA, iterB),
+        bMinusA: lazyfy(_diff)(iterB, iterA),
+      };
+    };
   };
-}
 
-export const setOperations = <E>(za: Lazy<E>, zb: Lazy<E>) =>
-  setOperationsBy(za, zb, id);
+export const setOperations = setOperationsBy(id);
 
-export const unionBy = <E, K>(za: Lazy<E>, zb: Lazy<E>, sel: Selector<E, K>) =>
-  setOperationsBy(za, zb, sel).union;
+const setOpBy =
+  <E, K>(
+    setOp: (
+      iterA: MemoKeyedIterator<E, K>,
+      iterB: MemoKeyedIterator<E, K>
+    ) => Gen<E>
+  ) =>
+  (sel: Selector<E, K>): LazyCombiner<E, E, E> =>
+  (zb) => {
+    const iterB = MemoKeyedIterator.FromLazy(zb, sel);
+    return (za) => {
+      const iterA = MemoKeyedIterator.FromLazy(za, sel);
+      return lazyfy(setOp)(iterA, iterB);
+    };
+  };
 
-export const union = <E>(za: Lazy<E>, zb: Lazy<E>) =>
-  setOperations(za, zb).union;
+export const unionBy = setOpBy(_union);
+export const union = unionBy(id);
 
-export const intersectionBy = <E, K>(
-  za: Lazy<E>,
-  zb: Lazy<E>,
-  sel: Selector<E, K>
-) => setOperationsBy(za, zb, sel).intersection;
+export const intersectionBy = setOpBy(_intersection);
+export const intersection = intersectionBy(id);
 
-export const intersection = <E>(za: Lazy<E>, zb: Lazy<E>) =>
-  setOperations(za, zb).intersection;
-
-export const differenceBy = <E, K>(
-  za: Lazy<E>,
-  zb: Lazy<E>,
-  sel: Selector<E, K>
-) => setOperationsBy(za, zb, sel).aMinusB;
-
-export const difference = <E>(za: Lazy<E>, zb: Lazy<E>) =>
-  setOperations(za, zb).aMinusB;
+export const differenceBy = setOpBy(_diff);
+export const difference = differenceBy(id);

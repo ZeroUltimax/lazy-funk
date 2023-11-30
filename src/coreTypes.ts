@@ -15,6 +15,7 @@ export type Successor<E> /* succ */ = (e: E) => E;
 
 // Decides if an element satisfies a condition.
 export type Predicate<E> /* pred */ = (e: E) => boolean;
+export type GenPredicate /* pred */ = <E>(e: E) => boolean;
 
 // Transforms an element into thing.
 export type Projection<E, R> /* proj */ = (e: E) => R;
@@ -27,8 +28,9 @@ export type Accumulator<A, E> /* acc */ = (acc: A, e: E) => A;
 
 // Gives an ordering between two elements.
 export type Compare<E> /* cmp */ = (a: E, b: E) => number;
+export type GenCompare /* cmp */ = <E>(a: E, b: E) => number;
 
-export type Sorted<E> /* grp */ = Lazy<E> & { readonly cmp: Compare<E> };
+export type Sorted<E> /* sz */ = Lazy<E> & { readonly cmp: Compare<E> };
 
 // Takes two elements and combines them into one.
 export type Zipper<E, F, R> /* zip */ = (elA: E, elB: F) => R;
@@ -43,42 +45,19 @@ export interface Lazy<E> /* z */ {
   [Symbol.iterator](): Iterator<E, unknown, undefined>;
 }
 
-// Produces new generator
-export type GenProducer<A extends any[], E> /* _prod */ = (
-  ...args: A
-) => Gen<E>;
+export type LazyOperator<E, F> /* op */ = (z: Lazy<E>) => Lazy<F>;
+export type GroupOperator<E, F, K> /* op */ = (z: Lazy<E>) => Lazy<Group<F, K>>;
 
-// Produces new lazies
-export type LazyProducer<A extends any[], E> /* prod */ = (
-  ...args: A
-) => Lazy<E>;
-
-// Does something to create a new genenrator
-export type GenOperator<A extends any[], E, F> /* _op */ = (
-  z: Lazy<E>,
-  ...args: A
-) => Gen<F>;
-
-// Does something to createa new lazy
-export type LazyOperator<A extends any[], E, F> /* op */ = (
-  z: Lazy<E>,
-  ...args: A
-) => Lazy<F>;
-
-export type CurriedLazyOperator<A extends any[], E, F> /* cOp */ = (
-  ...args: A
-) => (z: Lazy<E>) => Lazy<F>;
-
-export type AppliedLazyOperator<E, F> /* aOp */ = (z: Lazy<E>) => Lazy<F>;
+// Does something to create a new lazy
+export type LazyCombiner<A, B, R> /* combo */ = (
+  zb: Lazy<B>
+) => (za: Lazy<A>) => Lazy<R>;
+export type SortedCombiner<A, B, R> /* combo */ = <CovB extends B>(
+  szb: Sorted<CovB>
+) => <CovA extends A>(sza: Sorted<CovA>) => Lazy<R>;
 
 // Transforms a lazy into a finalized value
-export type LazyReducer<A extends any[], E, R> /* red */ = (
-  z: Lazy<E>,
-  ...args: A
-) => R;
-
-export type CurriedLazyReducer<A extends any[], E, R> /* cRed */ = (
-  ...args: A
-) => (z: Lazy<E>) => R;
-
-export type AppliedLazyReducer<E, R> /* aRed */ = (z: Lazy<E>) => R;
+export type LazyReducer<E, R> /* red */ = (z: Lazy<E>) => R;
+export type LazyCombinerReducer<A, B, R> /* comboRed */ = (
+  zb: Lazy<B>
+) => (za: Lazy<A>) => R;

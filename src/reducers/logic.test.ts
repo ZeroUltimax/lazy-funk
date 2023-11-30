@@ -10,23 +10,23 @@ describe("Logic Reducers", () => {
   describe("areAll", () => {
     it("Returns true if all match", () => {
       const numbers = [1, 3, 5, 7];
-      const actual = areAll(numbers, isOdd);
+      const actual = areAll(isOdd)(numbers);
       const expected = true;
       expect(actual).toEqual(expected);
     });
     it("Returns false if one doesn't match", () => {
       const numbers = [1, 3, 4, 5, 7];
-      const actual = areAll(numbers, isOdd);
+      const actual = areAll(isOdd)(numbers);
       const expected = false;
       expect(actual).toEqual(expected);
     });
     it("Short circuits to false", () => {
       const numbers = [() => 1, () => throws("Fail")];
       const isEvenGen = (n: () => number) => n() % 2 == 0;
-      expect(() => areAll(numbers, isEvenGen)).not.toThrow();
+      expect(() => areAll(isEvenGen)(numbers)).not.toThrow();
     });
     it("Is true on empty sequence", () => {
-      const actual = areAll(empty<number>(), isOdd);
+      const actual = areAll(isOdd)(empty<number>());
       const expected = true;
       expect(actual).toEqual(expected);
     });
@@ -34,23 +34,23 @@ describe("Logic Reducers", () => {
   describe("areAny", () => {
     it("Returns true if any match", () => {
       const numbers = [1, 3, 4, 5, 7];
-      const actual = areAny(numbers, isEven);
+      const actual = areAny(isEven)(numbers);
       const expected = true;
       expect(actual).toEqual(expected);
     });
     it("Returns false if none match", () => {
       const numbers = [1, 3, 5, 7];
-      const actual = areAny(numbers, isEven);
+      const actual = areAny(isEven)(numbers);
       const expected = false;
       expect(actual).toEqual(expected);
     });
     it("Short circuits to true", () => {
       const numbers = [() => 2, () => throws("Fail")];
       const isEvenGen = (n: () => number) => n() % 2 == 0;
-      expect(() => areAny(numbers, isEvenGen)).not.toThrow();
+      expect(() => areAny(isEvenGen)(numbers)).not.toThrow();
     });
     it("Is false on empty sequence", () => {
-      const actual = areAny(empty<number>(), isEven);
+      const actual = areAny(isEven)(empty<number>());
       const expected = false;
       expect(actual).toEqual(expected);
     });

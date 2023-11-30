@@ -1,5 +1,5 @@
 import { Gen, Lazy, Zipper } from "../coreTypes";
-import { lazyfy } from "../funk/lazyfy";
+import { lazyfyCombo } from "../funk/lazyfy";
 import { nrgz } from "../funk/nrgz";
 
 function* _zipWith<A, B, R>(
@@ -7,23 +7,16 @@ function* _zipWith<A, B, R>(
   zb: Lazy<B>,
   zip: Zipper<A, B, R>
 ): Gen<R> {
-  const ita = nrgz(za);
-  const itb = nrgz(zb);
-
   for (
-    let nxa = ita.next(), nxb = itb.next();
+    let ita = nrgz(za), nxa = ita.next(), itb = nrgz(zb), nxb = itb.next();
     !nxa.done && !nxb.done;
     nxa = ita.next(), nxb = itb.next()
-  ) {
-    const ela = nxa.value;
-    const elb = nxb.value;
-    yield zip(ela, elb);
-  }
+  )
+    yield zip(nxa.value, nxb.value);
 }
 
-export const zipWith = lazyfy(_zipWith);
+export const zipWith = lazyfyCombo(_zipWith);
 
-const arrayZip = <A, B>(ela: A, elb: B) => [ela, elb] as const;
+const arrayZip = <A, B>(ela: A, elb: B): readonly [A, B] => [ela, elb];
 
-export const zip = <A, B>(za: Lazy<A>, zb: Lazy<B>) =>
-  zipWith(za, zb, arrayZip);
+export const zip = zipWith(arrayZip);

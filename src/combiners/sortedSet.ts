@@ -1,59 +1,62 @@
-import { Gen, Lazy, Sorted } from "../coreTypes";
+import { Lazy, Sorted } from "../coreTypes";
 import { lazyfy } from "../funk/lazyfy";
-import { nrgz } from "../funk/nrgz";
+import { rep } from "../funk/_rep";
 import { SortedSetOperations } from "../iterables/SortedSetOperations";
+import { filter } from "../operators/filter";
+import { map } from "../operators/map";
 import {
   sortedFullGroupJoin,
   sortedGroupJoin,
   sortedLeftGroupJoin,
 } from "./sortedGroupJoin";
 
-// Forcibly pull the first element of a lazy know to have at least one entry
-function rep<E>(z: Lazy<E>): E {
-  const it = nrgz(z);
-  const nx = it.next() as IteratorYieldResult<E>;
-  return nx.value;
-}
+type SetCombiner = <E>(szb: Sorted<E>) => <E>(sza: Sorted<E>) => Lazy<E>;
 
-const unionGroupSelector = <E>(a: Lazy<E> | null, b: Lazy<E> | null): E =>
-  rep(a || b!);
+const unionGroupSelector = <A, B>(
+  a: Lazy<A> | null,
+  b: Lazy<B> | null
+): A | B => rep<A | B>(a || b!);
 
-export const sortedUnion = <E>(sza: Sorted<E>, szb: Sorted<E>) =>
-  sortedFullGroupJoin(sza, szb, unionGroupSelector);
+export const sortedUnion = sortedFullGroupJoin(
+  unionGroupSelector
+) as SetCombiner;
 
 const intersectionGroupSelector = <E>(a: Lazy<E>): E => rep(a);
 
-export const sortedIntersection = <E>(sza: Sorted<E>, szb: Sorted<E>) =>
-  sortedGroupJoin(sza, szb, intersectionGroupSelector);
+export const sortedIntersection = sortedGroupJoin(
+  intersectionGroupSelector
+) as SetCombiner;
 
-interface LeftGroupResultSelector<E> {
+interface DiffGroup<E> {
   a: Lazy<E>;
   b: Lazy<E> | null;
 }
 
-function differenceGroupSelector<E>(
+const differenceSelector = <E>(
   a: Lazy<E>,
   b: Lazy<E> | null
-): LeftGroupResultSelector<E> {
-  return { a, b };
-}
+): DiffGroup<E> => ({ a, b });
+const differenceFilter = <E>({ b }: DiffGroup<E>) => b === null;
+const differenceMap = <E>({ a }: DiffGroup<E>) => rep(a);
 
-function* _sortedDifference<E>(zg: Lazy<LeftGroupResultSelector<E>>): Gen<E> {
-  for (const { a, b } of zg) if (!b) yield rep(a);
-}
+export const sortedDifference =
+  <E>(szb: Sorted<E>) =>
+  (sza: Sorted<E>) =>
+    map(differenceMap)(
+      filter(differenceFilter)(
+        sortedLeftGroupJoin(differenceSelector<E>)(szb)(sza)
+      )
+    );
 
-export function sortedDifference<E>(sza: Sorted<E>, szb: Sorted<E>) {
-  const zg = sortedLeftGroupJoin(sza, szb, differenceGroupSelector);
-  return lazyfy(_sortedDifference)(zg);
-}
-
-export function sortedSetOperations<E>(sza: Sorted<E>, szb: Sorted<E>) {
-  const sso = SortedSetOperations.FromSorted(sza, szb);
-
-  return {
-    union: lazyfy(sso.iter.bind(sso))("full"),
-    intersection: lazyfy(sso.iter.bind(sso))("inner"),
-    aMinusB: lazyfy(sso.iter.bind(sso))("left"),
-    bMinusA: lazyfy(sso.iter.bind(sso))("right"),
+export const sortedSetOperations =
+  <E>(szb: Sorted<E>) =>
+  (sza: Sorted<E>) => {
+    const sso = SortedSetOperations.FromSorted(sza, szb);
+    const ssoIter = lazyfy(sso.iter.bind(sso));
+    return {
+      union: ssoIter("full"),
+      intersection: ssoIter("inner"),
+      aMinusB: ssoIter("left"),
+      bMinusA: ssoIter("right"),
+    };
   };
-}

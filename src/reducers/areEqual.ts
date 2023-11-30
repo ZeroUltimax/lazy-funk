@@ -1,12 +1,9 @@
 import { Compare, Lazy } from "../coreTypes";
 import { cmpNatural } from "../funk/comparators";
+import { curryComboReducer } from "../funk/lazyfy";
 import { nrgz } from "../funk/nrgz";
 
-export function areEqual<E>(
-  za: Lazy<E>,
-  zb: Lazy<E>,
-  cmp: Compare<E> = cmpNatural
-) {
+function _areEqual<E>(za: Lazy<E>, zb: Lazy<E>, cmp: Compare<E> = cmpNatural) {
   let ita = nrgz(za);
   let itb = nrgz(zb);
   let nxa;
@@ -15,11 +12,10 @@ export function areEqual<E>(
     nxa = ita.next(), nxb = itb.next();
     !nxa.done && !nxb.done;
     nxa = ita.next(), nxb = itb.next()
-  ) {
-    const ela = nxa.value;
-    const elb = nxb.value;
-    if (cmp(ela, elb) !== 0) return false;
-  }
+  )
+    if (cmp(nxa.value, nxb.value) !== 0) return false;
 
   return !!(nxa.done && nxb.done);
 }
+
+export const areEqual = curryComboReducer(_areEqual);

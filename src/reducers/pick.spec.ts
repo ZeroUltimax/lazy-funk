@@ -30,14 +30,14 @@ describe("First By", () => {
   it("Returns first match", () => {
     const numbers = [1, 2, 3];
     const pred = (n: number) => n > 1;
-    const actual = firstBy(numbers, pred);
+    const actual = firstBy(pred)(numbers);
     const expected = 2;
     expect(actual).toEqual(expected);
   });
   it("Throws on no match", () => {
     const numbers = [1, 2, 3];
     const pred = (n: number) => n > 999;
-    expect(() => firstBy(numbers, pred)).toThrow();
+    expect(() => firstBy(pred)(numbers)).toThrow();
   });
 });
 
@@ -45,14 +45,14 @@ describe("First or Default", () => {
   it("Returns first element", () => {
     const numbers = [1, 2, 3];
     const seed = () => -1;
-    const actual = firstOrDefault(numbers, seed);
+    const actual = firstOrDefault(seed)(numbers);
     const expected = 1;
     expect(actual).toEqual(expected);
   });
   it("Returns default on empty", () => {
     const numbers: number[] = [];
     const seed = () => -1;
-    const actual = firstOrDefault(numbers, seed);
+    const actual = firstOrDefault(seed)(numbers);
     const expected = -1;
     expect(actual).toEqual(expected);
   });
@@ -63,7 +63,7 @@ describe("First or Default By", () => {
     const numbers = [1, 2, 3];
     const pred = (n: number) => n > 1;
     const seed = () => -1;
-    const actual = firstOrDefaultBy(numbers, pred, seed);
+    const actual = firstOrDefaultBy(pred, seed)(numbers);
     const expected = 2;
     expect(actual).toEqual(expected);
   });
@@ -71,7 +71,7 @@ describe("First or Default By", () => {
     const numbers = [1, 2, 3];
     const pred = (n: number) => n > 999;
     const seed = () => -1;
-    const actual = firstOrDefaultBy(numbers, pred, seed);
+    const actual = firstOrDefaultBy(pred, seed)(numbers);
     const expected = -1;
     expect(actual).toEqual(expected);
   });
@@ -94,14 +94,14 @@ describe("Last By", () => {
   it("Returns last match", () => {
     const numbers = [1, 2, 3];
     const pred = (n: number) => n <= 2;
-    const actual = lastBy(numbers, pred);
+    const actual = lastBy(pred)(numbers);
     const expected = 2;
     expect(actual).toEqual(expected);
   });
   it("Throws on no match", () => {
     const numbers = [1, 2, 3];
     const pred = (n: number) => n > 999;
-    expect(() => lastBy(numbers, pred)).toThrow();
+    expect(() => lastBy(pred)(numbers)).toThrow();
   });
 });
 
@@ -109,14 +109,14 @@ describe("Last or Default", () => {
   it("Returns last element", () => {
     const numbers = [1, 2, 3];
     const seed = () => -1;
-    const actual = lastOrDefault(numbers, seed);
+    const actual = lastOrDefault(seed)(numbers);
     const expected = 3;
     expect(actual).toEqual(expected);
   });
   it("Returns default on empty", () => {
     const numbers: number[] = [];
     const seed = () => -1;
-    const actual = lastOrDefault(numbers, seed);
+    const actual = lastOrDefault(seed)(numbers);
     const expected = -1;
     expect(actual).toEqual(expected);
   });
@@ -127,7 +127,7 @@ describe("Last or Default By", () => {
     const numbers = [1, 2, 3];
     const pred = (n: number) => n <= 2;
     const seed = () => -1;
-    const actual = lastOrDefaultBy(numbers, pred, seed);
+    const actual = lastOrDefaultBy(pred, seed)(numbers);
     const expected = 2;
     expect(actual).toEqual(expected);
   });
@@ -135,7 +135,7 @@ describe("Last or Default By", () => {
     const numbers = [1, 2, 3];
     const pred = (n: number) => n > 999;
     const seed = () => -1;
-    const actual = lastOrDefaultBy(numbers, pred, seed);
+    const actual = lastOrDefaultBy(pred, seed)(numbers);
     const expected = -1;
     expect(actual).toEqual(expected);
   });
@@ -162,19 +162,19 @@ describe("Single By", () => {
   it("Returns only match", () => {
     const numbers = [1, 2, 3];
     const pred = (n: number) => n === 2;
-    const actual = singleBy(numbers, pred);
+    const actual = singleBy(pred)(numbers);
     const expected = 2;
     expect(actual).toEqual(expected);
   });
   it("Throws no match", () => {
     const numbers = [1, 2, 3];
     const pred = (n: number) => n > 999;
-    expect(() => singleBy(numbers, pred)).toThrow();
+    expect(() => singleBy(pred)(numbers)).toThrow();
   });
   it("Throws on multiple matches", () => {
     const numbers = [1, 2, 3];
     const pred = (n: number) => n > 1;
-    expect(() => singleBy(numbers, pred)).toThrow();
+    expect(() => singleBy(pred)(numbers)).toThrow();
   });
 });
 
@@ -182,21 +182,21 @@ describe("Single or Default", () => {
   it("Returns only element", () => {
     const numbers = [1];
     const seed = () => -1;
-    const actual = singleOrDefault(numbers, seed);
+    const actual = singleOrDefault(seed)(numbers);
     const expected = 1;
     expect(actual).toEqual(expected);
   });
   it("Returns default on empty", () => {
     const numbers: number[] = [];
     const seed = () => -1;
-    const actual = singleOrDefault(numbers, seed);
+    const actual = singleOrDefault(seed)(numbers);
     const expected = -1;
     expect(actual).toEqual(expected);
   });
   it("Throws on multiple elements", () => {
     const numbers = [1, 2];
     const seed = () => -1;
-    expect(() => singleOrDefault(numbers, seed)).toThrow();
+    expect(() => singleOrDefault(seed)(numbers)).toThrow();
   });
 });
 
@@ -205,7 +205,7 @@ describe("Single or Default By", () => {
     const numbers = [1, 2, 3];
     const pred = (n: number) => n === 2;
     const seed = () => -1;
-    const actual = singleOrDefaultBy(numbers, pred, seed);
+    const actual = singleOrDefaultBy(pred, seed)(numbers);
     const expected = 2;
     expect(actual).toEqual(expected);
   });
@@ -213,7 +213,7 @@ describe("Single or Default By", () => {
     const numbers = [1, 2, 3];
     const pred = (n: number) => n > 999;
     const seed = () => -1;
-    const actual = singleOrDefaultBy(numbers, pred, seed);
+    const actual = singleOrDefaultBy(pred, seed)(numbers);
     const expected = -1;
     expect(actual).toEqual(expected);
   });
@@ -221,6 +221,6 @@ describe("Single or Default By", () => {
     const numbers = [1, 2, 3];
     const pred = (n: number) => n > 1;
     const seed = () => -1;
-    expect(() => singleOrDefaultBy(numbers, pred, seed)).toThrow();
+    expect(() => singleOrDefaultBy(pred, seed)(numbers)).toThrow();
   });
 });

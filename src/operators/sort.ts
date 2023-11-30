@@ -1,12 +1,7 @@
-import { Compare, Gen, Lazy, Predicate, Sorted } from "../coreTypes";
-import { lazyfy } from "../funk/lazyfy";
+import { Compare, Gen, Lazy } from "../coreTypes";
+import { lazyfySortedOp } from "../funk/_sorted";
 import { nrgz } from "../funk/nrgz";
-
-function pivotPredicate<E>(piv: E, cmp: Compare<E>): Predicate<E> {
-  return function (el: E) {
-    return cmp(el, piv) < 0;
-  };
-}
+import { isLT } from "../funk/predicates";
 
 function swp<E>(buf: E[], a: number, b: number) {
   const swp = buf[a];
@@ -24,11 +19,7 @@ function* _selectSort<E>(
 ): Gen<E> {
   for (let i = start; i < end; ++i) {
     let idx = i;
-    for (let j = i + 1; j < end; ++j) {
-      if (cmp(buf[j], buf[idx]) < 0) {
-        idx = j;
-      }
-    }
+    for (let j = i + 1; j < end; ++j) if (cmp(buf[j], buf[idx]) < 0) idx = j;
     swp(buf, idx, i);
     yield buf[i];
   }
@@ -48,16 +39,11 @@ function heapSiftDown<E>(
 
   if (leftIdx >= size) return;
 
-  if (cmp(buf[last - leftIdx], buf[last - swapIdx]) < 0) {
-    swapIdx = leftIdx;
-  }
+  if (cmp(buf[last - leftIdx], buf[last - swapIdx]) < 0) swapIdx = leftIdx;
 
   const rightIdx = leftIdx + 1;
-  if (rightIdx < size) {
-    if (cmp(buf[last - rightIdx], buf[last - swapIdx]) < 0) {
-      swapIdx = rightIdx;
-    }
-  }
+  if (rightIdx < size)
+    if (cmp(buf[last - rightIdx], buf[last - swapIdx]) < 0) swapIdx = rightIdx;
 
   if (swapIdx === rootIdx) return;
   swp(buf, last - rootIdx, last - swapIdx);
@@ -65,9 +51,8 @@ function heapSiftDown<E>(
 }
 
 function heapify<E>(buf: E[], last: number, size: number, cmp: Compare<E>) {
-  for (let i = (size - 2) >> 1; i >= 0; i--) {
+  for (let i = (size - 2) >> 1; i >= 0; i--)
     heapSiftDown(buf, last, size, cmp, i);
-  }
 }
 
 function* _heapSort<E>(
@@ -131,16 +116,13 @@ function* _introSort<E>(
   end: number,
   maxDepth: number
 ): Gen<E> {
-  if (end - start <= SelectionSortSize) {
+  if (end - start <= SelectionSortSize)
     return yield* _selectSort(buf, cmp, start, end);
-  }
 
-  if (maxDepth === 0) {
-    return yield* _heapSort(buf, cmp, start, end);
-  }
+  if (maxDepth === 0) return yield* _heapSort(buf, cmp, start, end);
 
   const piv = med3Pivot(buf, cmp, start, end);
-  const pivPred = pivotPredicate(piv, cmp);
+  const pivPred = isLT(piv, cmp);
 
   let s = start + 1;
   let e = end;
@@ -169,12 +151,9 @@ function* _sort<E>(z: Lazy<E>, cmp: Compare<E>): Gen<E> {
   yield* _introSort(buf, cmp, start, end, maxDepth);
 }
 
-export const sort = <E>(z: Lazy<E>, cmp: Compare<E>): Sorted<E> =>
-  Object.assign(lazyfy(_sort)(z, cmp), { cmp });
+export const sort = lazyfySortedOp(_sort);
 
-export function asSorted<E>(z: Lazy<E>, cmp: Compare<E>): Sorted<E> {
-  return Object.assign(lazyfy(nrgz)(z), { cmp });
-}
+export const asSorted = lazyfySortedOp(nrgz);
 
 function* _assertSorted<E>(z: Lazy<E>, cmp: Compare<E>): Gen<E> {
   let it = nrgz(z);
@@ -182,15 +161,11 @@ function* _assertSorted<E>(z: Lazy<E>, cmp: Compare<E>): Gen<E> {
   if (nx.done) return;
   let lEl;
   yield (lEl = nx.value);
-
-  for (nx = it.next(); !nx.done; nx = it.next()) {
-    const el = nx.value;
-    if (cmp(lEl, el) > 0) throw new Error("Not sorted");
-    yield (lEl = nx.value);
-  }
+  for (nx = it.next(); !nx.done; nx = it.next())
+    if (cmp(lEl, nx.value) > 0) throw new Error("Not sorted");
+    else yield (lEl = nx.value);
 }
 
-export const assertSorted = <E>(z: Lazy<E>, cmp: Compare<E>) =>
-  Object.assign(lazyfy(_assertSorted)(z, cmp), { cmp });
+export const assertSorted = lazyfySortedOp(_assertSorted);
 
 export const __TEST_ONLY__ = { _heapSort };

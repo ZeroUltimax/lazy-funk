@@ -1,7 +1,6 @@
 import { Accumulator, Gen, Lazy, Seed } from "../coreTypes";
-import { lazyfy } from "../funk/lazyfy";
+import { lazyfyOp } from "../funk/lazyfy";
 import { nrgz } from "../funk/nrgz";
-import { throws } from "../funk/throws";
 
 function* _scan<E, A = E>(
   z: Lazy<E>,
@@ -10,27 +9,20 @@ function* _scan<E, A = E>(
 ): Gen<A> {
   let val = seed();
   yield val;
-  for (const el of z) {
-    val = acc(val, el);
-    yield val;
-  }
+  for (const el of z) yield (val = acc(val, el));
 }
 
-export const scan = lazyfy(_scan);
+export const scan = lazyfyOp(_scan);
 
 function* _scanSeedless<E>(z: Lazy<E>, acc: Accumulator<E, E>) {
   const it = nrgz(z);
   let nx = it.next();
-  if (nx.done) {
-    throws("No initial element");
-  }
-  let val = nx.value;
-  yield val;
-  for (nx = it.next(); !nx.done; nx = it.next()) {
-    const el = nx.value;
-    val = acc(val, el);
-    yield val;
-  }
+  if (nx.done) throw "No initial element";
+
+  let val;
+  yield (val = nx.value);
+  for (nx = it.next(); !nx.done; nx = it.next())
+    yield (val = acc(val, nx.value));
 }
 
-export const scanSeedless = lazyfy(_scanSeedless);
+export const scanSeedless = lazyfyOp(_scanSeedless);

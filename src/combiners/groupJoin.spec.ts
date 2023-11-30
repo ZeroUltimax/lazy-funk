@@ -29,12 +29,8 @@ describe("GroupJoin", () => {
       { key: "b", a: ["basket", "bed"], b: ["beer", "bird"] },
     ];
     const actual = [
-      ...groupJoin(
-        wordsABC,
-        wordsBCD,
-        selFirstLetter,
-        selFirstLetter,
-        joinAsGroup
+      ...groupJoin(selFirstLetter, selFirstLetter, joinAsGroup)(wordsBCD)(
+        wordsABC
       ),
     ];
     expect(actual).toEqual(expected);
@@ -50,12 +46,8 @@ describe("Left Join", () => {
     ];
 
     const actual = [
-      ...leftGroupJoin(
-        wordsABC,
-        wordsBCD,
-        selFirstLetter,
-        selFirstLetter,
-        joinAsGroup
+      ...leftGroupJoin(selFirstLetter, selFirstLetter, joinAsGroup)(wordsBCD)(
+        wordsABC
       ),
     ];
     expect(actual).toEqual(expected);
@@ -69,13 +61,11 @@ describe("Left Join", () => {
 
     const actual = [
       ...leftGroupJoinWithDefault(
-        wordsABC,
-        wordsBCD,
         selFirstLetter,
         selFirstLetter,
         () => "missing",
         joinAsGroup
-      ),
+      )(wordsBCD)(wordsABC),
     ];
     expect(actual).toEqual(expected);
   });
@@ -90,12 +80,8 @@ describe("Right Join", () => {
     ];
 
     const actual = [
-      ...rightGroupJoin(
-        wordsABC,
-        wordsBCD,
-        selFirstLetter,
-        selFirstLetter,
-        joinAsGroup
+      ...rightGroupJoin(selFirstLetter, selFirstLetter, joinAsGroup)(wordsBCD)(
+        wordsABC
       ),
     ];
     expect(actual).toEqual(expected);
@@ -108,13 +94,11 @@ describe("Right Join", () => {
     ];
     const actual = [
       ...rightGroupJoinWithDefault(
-        wordsABC,
-        wordsBCD,
         selFirstLetter,
         selFirstLetter,
         () => "nowhere",
         joinAsGroup
-      ),
+      )(wordsBCD)(wordsABC),
     ];
     expect(actual).toEqual(expected);
   });
@@ -130,12 +114,8 @@ describe("Full Join", () => {
     ];
 
     const actual = [
-      ...fullGroupJoin(
-        wordsABC,
-        wordsBCD,
-        selFirstLetter,
-        selFirstLetter,
-        joinAsGroup
+      ...fullGroupJoin(selFirstLetter, selFirstLetter, joinAsGroup)(wordsBCD)(
+        wordsABC
       ),
     ];
     expect(actual).toEqual(expected);
@@ -150,14 +130,12 @@ describe("Full Join", () => {
 
     const actual = [
       ...fullGroupJoinWithDefault(
-        wordsABC,
-        wordsBCD,
         selFirstLetter,
         selFirstLetter,
         () => "nowhere",
         () => "missing",
         joinAsGroup
-      ),
+      )(wordsBCD)(wordsABC),
     ];
     expect(actual).toEqual(expected);
   });

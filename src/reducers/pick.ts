@@ -1,36 +1,51 @@
-import { Lazy, Predicate, Seed } from "../coreTypes";
+import { Lazy, LazyReducer, Predicate, Seed } from "../coreTypes";
 import { nrgz } from "../funk/nrgz";
 import { isAlway } from "../funk/predicates";
+import { nullSeed, throwsSeed } from "../funk/seed";
 import { throws } from "../funk/throws";
 import { filter } from "../operators/filter";
 
-const nullSeed = <F>(): F => null as F;
-const noMatchSeed = () => throws("No match");
+const noMatch = throwsSeed("No match");
 
-function _firstOrDefault<E, F>(z: Lazy<E>, pred: Predicate<E>, seed: Seed<F>) {
-  const fz = filter(z, pred);
+function _firstOrDefaultBy<E, F>(
+  z: Lazy<E>,
+  pred: Predicate<E>,
+  seed: Seed<F>
+) {
+  const fz = filter(pred)(z);
   const it = nrgz(fz);
   let nx = it.next();
   if (nx.done) return seed();
   return nx.value;
 }
 
-export const firstOrDefault = <E, F = null>(
-  z: Lazy<E>,
-  seed: Seed<F> = nullSeed
-) => _firstOrDefault(z, isAlway, seed);
-export const firstOrDefaultBy = <E, F = null>(
+interface OrDefaultBy {
+  <E>(pred: Predicate<E>): LazyReducer<E, E | null>;
+  <E, F>(pred: Predicate<E>, seed: Seed<F>): LazyReducer<E, E | F>;
+}
+
+interface OrDefault {
+  (): <E>(z: Lazy<E>) => E | null;
+  <F>(seed: Seed<F>): <E>(z: Lazy<E>) => E | F;
+}
+
+export const firstOrDefaultBy: OrDefaultBy =
+  <E, F>(pred: Predicate<E>, seed = nullSeed as Seed<F>) =>
+  (z: Lazy<E>) =>
+    _firstOrDefaultBy(z, pred, seed);
+export const firstOrDefault: OrDefault = <E, F>(
+  seed: Seed<F> = nullSeed as Seed<F>
+) => firstOrDefaultBy<E, F>(isAlway, seed);
+export const firstBy = <E>(pred: Predicate<E>) =>
+  firstOrDefaultBy(pred, noMatch);
+export const first = firstOrDefaultBy(isAlway, noMatch);
+
+function _lastOrDefaultBy<E, F>(
   z: Lazy<E>,
   pred: Predicate<E>,
-  seed: Seed<F> = nullSeed
-) => _firstOrDefault(z, pred, seed);
-export const first = <E>(z: Lazy<E>) =>
-  _firstOrDefault(z, isAlway, noMatchSeed);
-export const firstBy = <E>(z: Lazy<E>, pred: Predicate<E>) =>
-  _firstOrDefault(z, pred, noMatchSeed);
-
-function _lastOrDefault<E, F>(z: Lazy<E>, pred: Predicate<E>, seed: Seed<F>) {
-  const fz = filter(z, pred);
+  seed: Seed<F>
+): E | F {
+  const fz = filter(pred)(z);
   const it = nrgz(fz);
   let nx = it.next();
   if (nx.done) return seed();
@@ -39,25 +54,22 @@ function _lastOrDefault<E, F>(z: Lazy<E>, pred: Predicate<E>, seed: Seed<F>) {
   return last;
 }
 
-export const lastOrDefault = <E, F = null>(
-  z: Lazy<E>,
-  seed: Seed<F> = nullSeed
-) => _lastOrDefault(z, isAlway, seed);
-export const lastOrDefaultBy = <E, F = null>(
-  z: Lazy<E>,
-  pred: Predicate<E>,
-  seed: Seed<F> = nullSeed
-) => _lastOrDefault(z, pred, seed);
-export const last = <E>(z: Lazy<E>) => _lastOrDefault(z, isAlway, noMatchSeed);
-export const lastBy = <E>(z: Lazy<E>, pred: Predicate<E>) =>
-  _lastOrDefault(z, pred, noMatchSeed);
+export const lastOrDefaultBy: OrDefaultBy =
+  <E, F>(pred: Predicate<E>, seed: Seed<F> = nullSeed as Seed<F>) =>
+  (z: Lazy<E>) =>
+    _lastOrDefaultBy(z, pred, seed);
+export const lastOrDefault: OrDefault = <E, F>(
+  seed: Seed<F> = nullSeed as Seed<F>
+) => lastOrDefaultBy<E, F>(isAlway, seed);
+export const lastBy = <E>(pred: Predicate<E>) => lastOrDefaultBy(pred, noMatch);
+export const last = lastOrDefaultBy(isAlway, noMatch);
 
-function _singleOrDefault<E, F>(
+function _singleOrDefaultBy<E, F>(
   z: Lazy<E>,
   pred: Predicate<E>,
   seed: Seed<F>
 ): E | F {
-  const fz = filter(z, pred);
+  const fz = filter(pred)(z);
   const it = nrgz(fz);
   const nx = it.next();
   if (nx.done) return seed();
@@ -66,16 +78,13 @@ function _singleOrDefault<E, F>(
   return nx.value;
 }
 
-export const singleOrDefault = <E, F = null>(
-  z: Lazy<E>,
-  seed: Seed<F> = nullSeed
-) => _singleOrDefault(z, isAlway, seed);
-export const singleOrDefaultBy = <E, F = null>(
-  z: Lazy<E>,
-  pred: Predicate<E>,
-  seed: Seed<F> = nullSeed
-) => _singleOrDefault(z, pred, seed);
-export const single = <E>(z: Lazy<E>) =>
-  _singleOrDefault(z, isAlway, noMatchSeed);
-export const singleBy = <E>(z: Lazy<E>, pred: Predicate<E>) =>
-  _singleOrDefault(z, pred, noMatchSeed);
+export const singleOrDefaultBy: OrDefaultBy =
+  <E, F>(pred: Predicate<E>, seed: Seed<F> = nullSeed as Seed<F>) =>
+  (z: Lazy<E>) =>
+    _singleOrDefaultBy(z, pred, seed);
+export const singleOrDefault: OrDefault = <E, F>(
+  seed: Seed<F> = nullSeed as Seed<F>
+) => singleOrDefaultBy<E, F>(isAlway, seed);
+export const singleBy = <E>(pred: Predicate<E>) =>
+  singleOrDefaultBy(pred, noMatch);
+export const single = singleOrDefaultBy(isAlway, noMatch);

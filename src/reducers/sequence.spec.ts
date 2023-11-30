@@ -31,14 +31,14 @@ describe("Sequence", () => {
     const numbers = range(0, 10);
     const element = 8;
     const expected = true;
-    const actual = contains(numbers, element);
+    const actual = contains(element)(numbers);
     expect(actual).toEqual(expected);
   });
   it("Can tell the absence of an element", () => {
     const numbers = range(0, 10);
     const element = 999;
     const expected = false;
-    const actual = contains(numbers, element);
+    const actual = contains(element)(numbers);
     expect(actual).toEqual(expected);
   });
 });

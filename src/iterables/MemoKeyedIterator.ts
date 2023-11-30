@@ -1,4 +1,5 @@
 import { Lazy, Selector } from "../coreTypes";
+import { repIter } from "../funk/_rep";
 import { lazyfy } from "../funk/lazyfy";
 import { nrgz } from "../funk/nrgz";
 
@@ -27,35 +28,31 @@ export class MemoKeyedIterator<E, K> {
     while (this.pullNextElement(key));
   }
 
-  private pullNextKey() {
+  private pullNextKey(): boolean {
     const { it, sel } = this;
-    for (let nx = it.next(); !nx.done; nx = it.next()) {
-      const el = nx.value;
-      const key = sel(el);
-      if (this.push(key, el)) return true;
-    }
+    for (let nx = it.next(); !nx.done; nx = it.next())
+      if (this.push(sel(nx.value), nx.value)) return true;
     return false;
   }
 
-  private pullNextElement(k: K) {
+  private pullNextElement(k: K): boolean {
     const { it, sel } = this;
     for (let nx = it.next(); !nx.done; nx = it.next()) {
-      const el = nx.value;
-      const key = sel(el);
-      this.push(key, el);
+      const key = sel(nx.value);
+      this.push(key, nx.value);
       if (key === k) return true;
     }
     return false;
   }
 
-  public containsKey(key: K) {
+  public containsKey(key: K): boolean {
     const { keys, map } = this;
     if (map.has(key)) return true;
     while (this.pullNextKey()) if (keys[keys.length - 1] === key) return true;
     return false;
   }
 
-  private push(key: K, el: E) {
+  private push(key: K, el: E): boolean {
     const { keys, map } = this;
     if (map.has(key)) {
       map.get(key)!.push(el);
@@ -67,10 +64,13 @@ export class MemoKeyedIterator<E, K> {
   }
 }
 
-export function lazyKeys<E, K>(iter: MemoKeyedIterator<E, K>) {
-  return lazyfy(iter.iterateKeys.bind(iter))();
-}
+export const lazyKeys = <E, K>(iter: MemoKeyedIterator<E, K>): Lazy<K> =>
+  lazyfy(iter.iterateKeys.bind(iter))();
 
-export function lazyValues<E, K>(iter: MemoKeyedIterator<E, K>, key: K) {
-  return lazyfy(iter.iterateValues.bind(iter))(key);
-}
+export const lazyValues = <E, K>(
+  iter: MemoKeyedIterator<E, K>,
+  key: K
+): Lazy<E> => lazyfy(iter.iterateValues.bind(iter))(key);
+
+export const repMemo = <E, K>(iter: MemoKeyedIterator<E, K>, key: K): E =>
+  repIter(iter.iterateValues(key));

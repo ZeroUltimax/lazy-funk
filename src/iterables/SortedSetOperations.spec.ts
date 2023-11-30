@@ -5,6 +5,8 @@ import { nrgz } from "../funk/nrgz";
 import { asSorted } from "../operators/sort";
 import { SortedSetOperations } from "./SortedSetOperations";
 
+const asCmpNumSorted = asSorted(cmpNum);
+
 describe("Sorted Set Operations Iterator", () => {
   const iterOnce = <E>(z: Lazy<E>) => {
     let itered = false;
@@ -16,8 +18,8 @@ describe("Sorted Set Operations Iterator", () => {
   };
 
   it("Iterates all values", () => {
-    const numbersA = asSorted([0, 1, 2], cmpNum);
-    const numbersB = asSorted([1, 2, 3], cmpNum);
+    const numbersA = asCmpNumSorted([0, 1, 2]);
+    const numbersB = asCmpNumSorted([1, 2, 3]);
     const ops = SortedSetOperations.FromSorted(numbersA, numbersB);
     const expected = [0, 1, 2, 3];
     const actual = [...ops.iter("full")];
@@ -25,8 +27,8 @@ describe("Sorted Set Operations Iterator", () => {
   });
 
   it("Iterates Minimally", () => {
-    const numbersA = asSorted(iterOnce([0, 1, 2]), cmpNum);
-    const numbersB = asSorted(iterOnce([1, 2, 3]), cmpNum);
+    const numbersA = asCmpNumSorted(iterOnce([0, 1, 2]));
+    const numbersB = asCmpNumSorted(iterOnce([1, 2, 3]));
     const ops = SortedSetOperations.FromSorted(numbersA, numbersB);
 
     const expected = [0, 1, 2, 3];

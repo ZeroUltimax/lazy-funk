@@ -7,7 +7,7 @@ describe("Fold", () => {
     const acc = (acc: string, el: number) =>
       acc.length ? acc + "," + el : acc + el;
     const seed = () => "";
-    const actual = fold(input, acc, seed);
+    const actual = fold(acc, seed)(input);
     const expected = "0,1,2,3,4";
     expect(actual).toEqual(expected);
   });
@@ -17,7 +17,7 @@ describe("Fold Seedless", () => {
   it("Seeds from first item", () => {
     const input = [1, 2, 3, 4];
     const acc = (acc: number, el: number) => acc + el;
-    const actual = foldSeedless(input, acc);
+    const actual = foldSeedless(acc)(input);
     const expected = 10;
     expect(actual).toEqual(expected);
   });
@@ -26,6 +26,6 @@ describe("Fold Seedless", () => {
     const input = empty<number>();
     const acc = (acc: number, el: number) => acc + el;
 
-    expect(() => foldSeedless(input, acc)).toThrow();
+    expect(() => foldSeedless(acc)(input)).toThrow();
   });
 });

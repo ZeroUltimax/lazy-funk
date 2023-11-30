@@ -13,14 +13,12 @@ import {
 
 const cmpHundreds = (a: number, b: number) =>
   cmpNum((a / 100) | 0, (b / 100) | 0);
-const numsA = asSorted(
-  [100, 99, 300, 299, 600, 700, 701, 800, 801, 900, 901, 1000, 1001, 1100],
-  cmpHundreds
-);
-const numsB = asSorted(
-  [200, 201, 301, 298, 400, 401, 500, 501, 600, 902, 903],
-  cmpHundreds
-);
+const numsA = asSorted(cmpHundreds)([
+  100, 99, 300, 299, 600, 700, 701, 800, 801, 900, 901, 1000, 1001, 1100,
+]);
+const numsB = asSorted(cmpHundreds)([
+  200, 201, 301, 298, 400, 401, 500, 501, 600, 902, 903,
+]);
 
 const defaultA = () => "defaultA";
 const defaultB = () => "defaultB";
@@ -32,8 +30,8 @@ const joinNums = (a: number | string | null, b: number | string | null) => [
 
 describe("Incompatible sorts", () => {
   it("Checks for incompatible sorts", () => {
-    const simpleNums = asSorted([0, 1, 2, 3], cmpNum);
-    expect(() => sortedJoin(simpleNums, numsA, joinNums)).toThrow();
+    const simpleNums = asSorted(cmpNum)([0, 1, 2, 3]);
+    expect(() => sortedJoin(joinNums)(numsA)(simpleNums)).toThrow();
   });
 });
 
@@ -63,8 +61,8 @@ describe("Sorted Join", () => {
       [903, 901],
     ];
 
-    const actualAB = [...sortedJoin(numsA, numsB, joinNums)];
-    const actualBA = [...sortedJoin(numsB, numsA, joinNums)];
+    const actualAB = [...sortedJoin(joinNums)(numsB)(numsA)];
+    const actualBA = [...sortedJoin(joinNums)(numsA)(numsB)];
 
     expect(actualAB).toEqual(expectedAB);
     expect(actualBA).toEqual(expectedBA);
@@ -110,8 +108,8 @@ describe("Sorted Left Join", () => {
       [903, 900],
       [903, 901],
     ];
-    const actualAB = [...sortedLeftJoin(numsA, numsB, joinNums)];
-    const actualBA = [...sortedLeftJoin(numsB, numsA, joinNums)];
+    const actualAB = [...sortedLeftJoin(joinNums)(numsB)(numsA)];
+    const actualBA = [...sortedLeftJoin(joinNums)(numsA)(numsB)];
 
     expect(actualAB).toEqual(expectedAB);
     expect(actualBA).toEqual(expectedBA);
@@ -155,10 +153,10 @@ describe("Sorted Left Join", () => {
       [903, 901],
     ];
     const actualAB = [
-      ...sortedLeftJoinWithDefault(numsA, numsB, defaultB, joinNums),
+      ...sortedLeftJoinWithDefault(defaultB, joinNums)(numsB)(numsA),
     ];
     const actualBA = [
-      ...sortedLeftJoinWithDefault(numsB, numsA, defaultA, joinNums),
+      ...sortedLeftJoinWithDefault(defaultA, joinNums)(numsA)(numsB),
     ];
 
     expect(actualAB).toEqual(expectedAB);
@@ -205,8 +203,8 @@ describe("Sorted Right Join", () => {
       [null, 1001],
       [null, 1100],
     ];
-    const actualAB = [...sortedRightJoin(numsA, numsB, joinNums)];
-    const actualBA = [...sortedRightJoin(numsB, numsA, joinNums)];
+    const actualAB = [...sortedRightJoin(joinNums)(numsB)(numsA)];
+    const actualBA = [...sortedRightJoin(joinNums)(numsA)(numsB)];
 
     expect(actualAB).toEqual(expectedAB);
     expect(actualBA).toEqual(expectedBA);
@@ -250,10 +248,10 @@ describe("Sorted Right Join", () => {
       ["defaultB", 1100],
     ];
     const actualAB = [
-      ...sortedRightJoinWithDefault(numsA, numsB, defaultA, joinNums),
+      ...sortedRightJoinWithDefault(defaultA, joinNums)(numsB)(numsA),
     ];
     const actualBA = [
-      ...sortedRightJoinWithDefault(numsB, numsA, defaultB, joinNums),
+      ...sortedRightJoinWithDefault(defaultB, joinNums)(numsA)(numsB),
     ];
 
     expect(actualAB).toEqual(expectedAB);
@@ -315,8 +313,8 @@ describe("Sorted Full Join", () => {
       [null, 1001],
       [null, 1100],
     ];
-    const actualAB = [...sortedFullJoin(numsA, numsB, joinNums)];
-    const actualBA = [...sortedFullJoin(numsB, numsA, joinNums)];
+    const actualAB = [...sortedFullJoin(joinNums)(numsB)(numsA)];
+    const actualBA = [...sortedFullJoin(joinNums)(numsA)(numsB)];
 
     expect(actualAB).toEqual(expectedAB);
     expect(actualBA).toEqual(expectedBA);
@@ -375,10 +373,10 @@ describe("Sorted Full Join", () => {
       ["defaultB", 1100],
     ];
     const actualAB = [
-      ...sortedFullJoinWithDefault(numsA, numsB, defaultA, defaultB, joinNums),
+      ...sortedFullJoinWithDefault(defaultA, defaultB, joinNums)(numsB)(numsA),
     ];
     const actualBA = [
-      ...sortedFullJoinWithDefault(numsB, numsA, defaultB, defaultA, joinNums),
+      ...sortedFullJoinWithDefault(defaultB, defaultA, joinNums)(numsA)(numsB),
     ];
 
     expect(actualAB).toEqual(expectedAB);

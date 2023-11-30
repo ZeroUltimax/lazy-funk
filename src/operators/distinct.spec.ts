@@ -29,7 +29,7 @@ describe("Distinct By", () => {
     ];
     const selLength = (w: string) => w.length;
     const expectd = ["one", "heat", "crazy", "resolute", "squalid"];
-    const actual = [...distinctBy(words, selLength)];
+    const actual = [...distinctBy(selLength)(words)];
     expect(actual).toEqual(expectd);
   });
 });

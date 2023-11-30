@@ -23,7 +23,7 @@ const opParam = (n: number): ts.ParameterDeclaration =>
     undefined,
     `aOp_${n}`,
     undefined,
-    f.createTypeReferenceNode("ALO", [
+    f.createTypeReferenceNode("LO", [
       f.createTypeReferenceNode(charCode(n)),
       f.createTypeReferenceNode(charCode(n + 1)),
     ])
@@ -75,7 +75,7 @@ const spoutFuncDecl = (n: number): ts.TypeElement =>
           undefined,
           "aRed",
           undefined,
-          f.createTypeReferenceNode("ALR", [
+          f.createTypeReferenceNode("LR", [
             f.createTypeReferenceNode(charCode(n)),
             f.createTypeReferenceNode("R"),
           ])

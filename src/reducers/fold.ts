@@ -1,15 +1,14 @@
 import { Accumulator, Lazy, Seed } from "../coreTypes";
+import { curryReducer } from "../funk/lazyfy";
 import { scan, scanSeedless } from "../operators/scan";
 import { last } from "./pick";
 
-export function fold<E, A>(
-  z: Lazy<E>,
-  acc: Accumulator<A, E>,
-  seed: Seed<A>
-): A {
-  return last(scan(z, acc, seed as any));
-}
+const _fold = <E, A>(z: Lazy<E>, acc: Accumulator<A, E>, seed: Seed<A>): A =>
+  last(scan(acc, seed)(z));
 
-export function foldSeedless<E>(z: Lazy<E>, acc: Accumulator<E, E>): E {
-  return last(scanSeedless(z, acc as any));
-}
+export const fold = curryReducer(_fold);
+
+const _foldSeedless = <E>(z: Lazy<E>, acc: Accumulator<E, E>): E =>
+  last(scanSeedless(acc)(z));
+
+export const foldSeedless = curryReducer(_foldSeedless);

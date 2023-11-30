@@ -4,6 +4,7 @@
   "description": "Lazy-evaluated, functional-oriented building blocks.",
   "main": "index.js",
   "scripts": {
+    "dev": "ts-node ./src/dev.ts",
     "test": "jest",
     "coverage": "jest --coverage"
   },

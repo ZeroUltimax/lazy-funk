@@ -1,25 +1,17 @@
 import { Lazy, Sorted } from "../coreTypes";
 import { nrgz } from "../funk/nrgz";
 import { sortedFullGroupJoin } from "../combiners/sortedGroupJoin";
-
-// Forcibly pull the first element of a lazy know to have at least one entry
-function rep<E>(z: Lazy<E>): E {
-  const it = nrgz(z);
-  const nx = it.next() as IteratorYieldResult<E>;
-  return nx.value;
-}
+import { rep } from "../funk/_rep";
 
 interface RawGroupResult<E, Ad, Bd> {
   a: Lazy<E> | Ad;
   b: Lazy<E> | Bd;
 }
 
-function rawGroupSelector<E, Ad, Bd>(
+const rawGroupSelector = <E, Ad, Bd>(
   a: Lazy<E> | Ad,
   b: Lazy<E> | Bd
-): RawGroupResult<E, Ad, Bd> {
-  return { a, b };
-}
+): RawGroupResult<E, Ad, Bd> => ({ a, b });
 
 export class SortedSetOperations<E> {
   /*
@@ -33,7 +25,7 @@ export class SortedSetOperations<E> {
   private right: E[] = [];
 
   static FromSorted<E>(sza: Sorted<E>, szb: Sorted<E>) {
-    const zg = sortedFullGroupJoin(sza, szb, rawGroupSelector);
+    const zg = sortedFullGroupJoin(rawGroupSelector<E, null, null>)(szb)(sza);
     return new SortedSetOperations(nrgz(zg));
   }
   private constructor(private it: Iterator<RawGroupResult<E, null, null>>) {}
@@ -58,11 +50,8 @@ export class SortedSetOperations<E> {
     if (a) {
       const repA = rep(a);
       this.full.push(repA);
-      if (b) {
-        this.inner.push(repA);
-      } else {
-        this.left.push(repA);
-      }
+      if (b) this.inner.push(repA);
+      else this.left.push(repA);
     } else {
       const repB = rep(b!);
       this.full.push(repB);

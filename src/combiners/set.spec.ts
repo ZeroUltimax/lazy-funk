@@ -1,4 +1,13 @@
-import { setOperations, setOperationsBy } from "./set";
+import {
+  difference,
+  differenceBy,
+  intersection,
+  intersectionBy,
+  setOperations,
+  setOperationsBy,
+  union,
+  unionBy,
+} from "./set";
 
 describe("Set Operations", () => {
   it("Gives set results", () => {
@@ -9,11 +18,22 @@ describe("Set Operations", () => {
     const expectedBDiffA = [4, 5];
     const expectedUnion = [0, 1, 2, 3, 4, 5];
 
-    const { aMinusB, intersection, bMinusA, union } = setOperations(a, b);
-    expect([...aMinusB]).toEqual(expectedADiffB);
-    expect([...intersection]).toEqual(expectedIntersect);
-    expect([...bMinusA]).toEqual(expectedBDiffA);
-    expect([...union]).toEqual(expectedUnion);
+    const {
+      aMinusB: aDiffB,
+      intersection: inter,
+      bMinusA: bDiffA,
+      union: un,
+    } = setOperations(b)(a);
+    const opADiffB = difference(b)(a);
+    const opInter = intersection(b)(a);
+    const opUn = union(b)(a);
+    expect([...aDiffB]).toEqual(expectedADiffB);
+    expect([...opADiffB]).toEqual(expectedADiffB);
+    expect([...inter]).toEqual(expectedIntersect);
+    expect([...opInter]).toEqual(expectedIntersect);
+    expect([...bDiffA]).toEqual(expectedBDiffA);
+    expect([...un]).toEqual(expectedUnion);
+    expect([...opUn]).toEqual(expectedUnion);
   });
 
   it("Gives set results with key selector", () => {
@@ -32,14 +52,21 @@ describe("Set Operations", () => {
     const expectedBDiffA = [_2y];
     const expectedUnion = [_0a, _1b, _2y];
 
-    const { aMinusB, intersection, bMinusA, union } = setOperationsBy(
-      a,
-      b,
-      selCode
-    );
-    expect([...aMinusB]).toEqual(expectedADiffB);
-    expect([...intersection]).toEqual(expectedIntersect);
-    expect([...bMinusA]).toEqual(expectedBDiffA);
-    expect([...union]).toEqual(expectedUnion);
+    const {
+      aMinusB: aDiffB,
+      intersection: inter,
+      bMinusA: bDiffA,
+      union: un,
+    } = setOperationsBy(selCode)(b)(a);
+    const opADiffB = differenceBy(selCode)(b)(a);
+    const opInter = intersectionBy(selCode)(b)(a);
+    const opUn = unionBy(selCode)(b)(a);
+    expect([...aDiffB]).toEqual(expectedADiffB);
+    expect([...opADiffB]).toEqual(expectedADiffB);
+    expect([...inter]).toEqual(expectedIntersect);
+    expect([...opInter]).toEqual(expectedIntersect);
+    expect([...bDiffA]).toEqual(expectedBDiffA);
+    expect([...un]).toEqual(expectedUnion);
+    expect([...opUn]).toEqual(expectedUnion);
   });
 });

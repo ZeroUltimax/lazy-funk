@@ -16,7 +16,7 @@ describe("Range", () => {
 
 describe("iota", () => {
   it("Generates infinite numbers", () => {
-    const actual = [...take(iota(), 10)];
+    const actual = [...take(10)(iota())];
     const expected = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
     expect(actual).toEqual(expected);
   });

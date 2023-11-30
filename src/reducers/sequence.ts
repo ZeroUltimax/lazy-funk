@@ -6,12 +6,9 @@ import { areAll, areAny } from "./logic";
 
 const accCount = <E>(n: number, _el: E) => n + 1;
 const seedCount = () => 0;
-export const count = <E>(z: Lazy<E>) => fold(z, accCount, seedCount);
+export const count = fold<any, number>(accCount, seedCount);
 
-export const isEmpty = <E>(z: Lazy<E>) => areAll(z, isNever);
+export const isEmpty = areAll(isNever);
 
-export const contains = <E>(
-  z: Lazy<E>,
-  el: E,
-  cmp: Compare<E> = cmpNatural<E>
-) => areAny(z, isEqual(el, cmp));
+export const contains = <E>(el: E, cmp: Compare<E> = cmpNatural<E>) =>
+  areAny(isEqual(el, cmp));

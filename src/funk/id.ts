@@ -1,1 +1,1 @@
-export const id = <E>(el: E) => el;
+export const id = <E>(el: E): E => el;

@@ -7,4 +7,4 @@ function* _repeat<E>(seed: Seed<E>): Gen<E> {
 }
 
 export const repeat = lazyfy(_repeat);
-export const repeatSequence = <E>(seed: () => Lazy<E>) => flat(repeat(seed));
+export const repeatSequence = <E>(seed: Seed<Lazy<E>>) => flat(repeat(seed));

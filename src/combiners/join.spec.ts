@@ -26,7 +26,7 @@ describe("Join", () => {
       ["bed", "bird"],
     ];
     const actual = [
-      ...join(wordsABC, wordsBCD, selFirstLetter, selFirstLetter, joinAsPair),
+      ...join(selFirstLetter, selFirstLetter, joinAsPair)(wordsBCD)(wordsABC),
     ];
     expect(actual).toEqual(expected);
   });
@@ -47,12 +47,8 @@ describe("Left Join", () => {
       ["bed", "bird"],
     ];
     const actual = [
-      ...leftJoin(
-        wordsABC,
-        wordsBCD,
-        selFirstLetter,
-        selFirstLetter,
-        joinAsPair
+      ...leftJoin(selFirstLetter, selFirstLetter, joinAsPair)(wordsBCD)(
+        wordsABC
       ),
     ];
     expect(actual).toEqual(expected);
@@ -72,13 +68,11 @@ describe("Left Join", () => {
     ];
     const actual = [
       ...leftJoinWithDefault(
-        wordsABC,
-        wordsBCD,
         selFirstLetter,
         selFirstLetter,
         () => "missing",
         joinAsPair
-      ),
+      )(wordsBCD)(wordsABC),
     ];
     expect(actual).toEqual(expected);
   });
@@ -99,12 +93,8 @@ describe("Right Join", () => {
       ["client", "cell"],
     ];
     const actual = [
-      ...rightJoin(
-        wordsABC,
-        wordsBCD,
-        selFirstLetter,
-        selFirstLetter,
-        joinAsPair
+      ...rightJoin(selFirstLetter, selFirstLetter, joinAsPair)(wordsBCD)(
+        wordsABC
       ),
     ];
     expect(actual).toEqual(expected);
@@ -124,13 +114,11 @@ describe("Right Join", () => {
     ];
     const actual = [
       ...rightJoinWithDefault(
-        wordsABC,
-        wordsBCD,
         selFirstLetter,
         selFirstLetter,
         () => "nowhere",
         joinAsPair
-      ),
+      )(wordsBCD)(wordsABC),
     ];
     expect(actual).toEqual(expected);
   });
@@ -153,12 +141,8 @@ describe("Full Join", () => {
       [null, "disk"],
     ];
     const actual = [
-      ...fullJoin(
-        wordsABC,
-        wordsBCD,
-        selFirstLetter,
-        selFirstLetter,
-        joinAsPair
+      ...fullJoin(selFirstLetter, selFirstLetter, joinAsPair)(wordsBCD)(
+        wordsABC
       ),
     ];
     expect(actual).toEqual(expected);
@@ -180,14 +164,12 @@ describe("Full Join", () => {
     ];
     const actual = [
       ...fullJoinWithDefault(
-        wordsABC,
-        wordsBCD,
         selFirstLetter,
         selFirstLetter,
         () => "nowhere",
         () => "missing",
         joinAsPair
-      ),
+      )(wordsBCD)(wordsABC),
     ];
     expect(actual).toEqual(expected);
   });

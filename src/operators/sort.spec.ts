@@ -24,7 +24,7 @@ const numbers = () => [
 describe("sort", () => {
   it("Sorts Numbers Desc", () => {
     const cmp = (a: number, b: number) => b - a;
-    const actual = [...sort(numbers(), cmp)];
+    const actual = [...sort(cmp)(numbers())];
     const expected = numbers().sort(cmp);
     expect(actual).toEqual(expected);
   });
@@ -41,7 +41,7 @@ describe("sort", () => {
 describe("asSorted", () => {
   it("Marks a lazy sorted", () => {
     const numbers = [1, 2, 3];
-    const actual = asSorted(numbers, cmpNum);
+    const actual = asSorted(cmpNum)(numbers);
     const actualNumbers = [...actual];
     const actualCmp = actual.cmp;
     const expectedNumbers = numbers;
@@ -54,7 +54,7 @@ describe("asSorted", () => {
 describe("assertSorted", () => {
   it("Checks that a lazy is sorted", () => {
     const numbers = [1, 2, 3];
-    const actual = assertSorted(numbers, cmpNum);
+    const actual = assertSorted(cmpNum)(numbers);
     const actualNumbers = [...actual];
     const actualCmp = actual.cmp;
     const expectedNumbers = numbers;
@@ -64,7 +64,7 @@ describe("assertSorted", () => {
   });
   it("Throws if the lazy is not sorted", () => {
     const numbers = [1, 2, 0];
-    const actual = assertSorted(numbers, cmpNum);
+    const actual = assertSorted(cmpNum)(numbers);
     expect(() => [...actual]).toThrow();
   });
 });
