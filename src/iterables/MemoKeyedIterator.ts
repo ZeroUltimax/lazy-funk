@@ -3,14 +3,17 @@ import { repIter } from "../funk/_rep";
 import { lazyfy } from "../funk/lazyfy";
 import { nrgz } from "../funk/nrgz";
 
-export class MemoKeyedIterator<E, K> {
+export class MemoKeyedIterator<E, CovE extends E, K> {
   private keys: K[] = [];
-  private map = new Map<K, E[]>();
+  private map = new Map<K, CovE[]>();
 
-  static FromLazy<E, K>(z: Lazy<E>, sel: Selector<E, K>) {
+  static FromLazy<E, CovE extends E, K>(z: Lazy<CovE>, sel: Selector<E, K>) {
     return new MemoKeyedIterator(nrgz(z), sel);
   }
-  private constructor(private it: Iterator<E>, private sel: Selector<E, K>) {}
+  private constructor(
+    private it: Iterator<CovE>,
+    private sel: Selector<E, K>
+  ) {}
 
   public *iterateKeys(): Generator<K> {
     const { keys } = this;
@@ -19,7 +22,7 @@ export class MemoKeyedIterator<E, K> {
     while (this.pullNextKey());
   }
 
-  public *iterateValues(key: K): Generator<E> {
+  public *iterateValues(key: K): Generator<CovE> {
     const { map } = this;
     if (!map.has(key)) map.set(key, []);
     const buff = map.get(key)!;
@@ -52,7 +55,7 @@ export class MemoKeyedIterator<E, K> {
     return false;
   }
 
-  private push(key: K, el: E): boolean {
+  private push(key: K, el: CovE): boolean {
     const { keys, map } = this;
     if (map.has(key)) {
       map.get(key)!.push(el);
@@ -64,13 +67,16 @@ export class MemoKeyedIterator<E, K> {
   }
 }
 
-export const lazyKeys = <E, K>(iter: MemoKeyedIterator<E, K>): Lazy<K> =>
-  lazyfy(iter.iterateKeys.bind(iter))();
+export const lazyKeys = <E, CovE extends E, K>(
+  iter: MemoKeyedIterator<E, CovE, K>
+): Lazy<K> => lazyfy(iter.iterateKeys.bind(iter))();
 
-export const lazyValues = <E, K>(
-  iter: MemoKeyedIterator<E, K>,
+export const lazyValues = <E, CovE extends E, K>(
+  iter: MemoKeyedIterator<E, CovE, K>,
   key: K
-): Lazy<E> => lazyfy(iter.iterateValues.bind(iter))(key);
+): Lazy<CovE> => lazyfy(iter.iterateValues.bind(iter))(key);
 
-export const repMemo = <E, K>(iter: MemoKeyedIterator<E, K>, key: K): E =>
-  repIter(iter.iterateValues(key));
+export const repMemo = <E, CovE extends E, K>(
+  iter: MemoKeyedIterator<E, CovE, K>,
+  key: K
+): CovE => repIter(iter.iterateValues(key));

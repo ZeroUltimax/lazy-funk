@@ -5,6 +5,7 @@ import {
   LazyCombinerReducer,
   LazyOperator,
   LazyReducer,
+  Predicate,
 } from "../coreTypes";
 
 // Ensures we create lazies the exact same way every time.
@@ -17,6 +18,17 @@ export const lazyfyOp =
   (...args: Args): LazyOperator<E, F> =>
   (z) =>
     lazyfy(_op)(z, ...args);
+
+export const lazyfyPredOp =
+  (
+    _op: <E, CovE extends E>(
+      z: Lazy<CovE>,
+      pred: Predicate<E>
+    ) => Iterator<CovE>
+  ) =>
+  <E>(pred: Predicate<E>) =>
+  <CovE extends E>(z: Lazy<CovE>) =>
+    lazyfy(_op)(z, pred);
 
 export const lazyfyCombo =
   <Args extends any[], A, B, R>(
