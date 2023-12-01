@@ -19,16 +19,19 @@ function _firstOrDefaultBy<E, F>(
   return nx.value;
 }
 
+// Make E covariant
 interface OrDefaultBy {
   <E>(pred: Predicate<E>): LazyReducer<E, E | null>;
   <E, F>(pred: Predicate<E>, seed: Seed<F>): LazyReducer<E, E | F>;
 }
 
+// Make E covariant
 interface OrDefault {
   (): <E>(z: Lazy<E>) => E | null;
   <F>(seed: Seed<F>): <E>(z: Lazy<E>) => E | F;
 }
 
+// Make E covariant
 export const firstOrDefaultBy: OrDefaultBy =
   <E, F>(pred: Predicate<E>, seed = nullSeed as Seed<F>) =>
   (z: Lazy<E>) =>
@@ -36,6 +39,7 @@ export const firstOrDefaultBy: OrDefaultBy =
 export const firstOrDefault: OrDefault = <E, F>(
   seed: Seed<F> = nullSeed as Seed<F>
 ) => firstOrDefaultBy<E, F>(isAlway, seed);
+// Make E covariant
 export const firstBy = <E>(pred: Predicate<E>) =>
   firstOrDefaultBy(pred, noMatch);
 export const first = firstOrDefaultBy(isAlway, noMatch);
@@ -54,6 +58,7 @@ function _lastOrDefaultBy<E, F>(
   return last;
 }
 
+// Make E covariant
 export const lastOrDefaultBy: OrDefaultBy =
   <E, F>(pred: Predicate<E>, seed: Seed<F> = nullSeed as Seed<F>) =>
   (z: Lazy<E>) =>
@@ -61,6 +66,7 @@ export const lastOrDefaultBy: OrDefaultBy =
 export const lastOrDefault: OrDefault = <E, F>(
   seed: Seed<F> = nullSeed as Seed<F>
 ) => lastOrDefaultBy<E, F>(isAlway, seed);
+// Make E covariant
 export const lastBy = <E>(pred: Predicate<E>) => lastOrDefaultBy(pred, noMatch);
 export const last = lastOrDefaultBy(isAlway, noMatch);
 
@@ -78,6 +84,7 @@ function _singleOrDefaultBy<E, F>(
   return nx.value;
 }
 
+// Make E covariant
 export const singleOrDefaultBy: OrDefaultBy =
   <E, F>(pred: Predicate<E>, seed: Seed<F> = nullSeed as Seed<F>) =>
   (z: Lazy<E>) =>
@@ -85,6 +92,7 @@ export const singleOrDefaultBy: OrDefaultBy =
 export const singleOrDefault: OrDefault = <E, F>(
   seed: Seed<F> = nullSeed as Seed<F>
 ) => singleOrDefaultBy<E, F>(isAlway, seed);
+// Make E covariant
 export const singleBy = <E>(pred: Predicate<E>) =>
   singleOrDefaultBy(pred, noMatch);
 export const single = singleOrDefaultBy(isAlway, noMatch);

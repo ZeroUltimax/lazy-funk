@@ -30,7 +30,9 @@ export type Accumulator<A, E> /* acc */ = (acc: A, e: E) => A;
 export type Compare<E> /* cmp */ = (a: E, b: E) => number;
 export type GenCompare /* cmp */ = <E>(a: E, b: E) => number;
 
-export type Sorted<E> /* sz */ = Lazy<E> & { readonly cmp: Compare<E> };
+export type Sorted<E, CovE extends E> /* sz */ = Lazy<CovE> & {
+  readonly cmp: Compare<E>;
+};
 
 // Takes two elements and combines them into one.
 export type Zipper<E, F, R> /* zip */ = (elA: E, elB: F) => R;
@@ -46,7 +48,6 @@ export interface Lazy<E> /* z */ {
 }
 
 export type LazyOperator<E, F> /* op */ = (z: Lazy<E>) => Lazy<F>;
-export type GroupOperator<E, F, K> /* op */ = (z: Lazy<E>) => Lazy<Group<F, K>>;
 
 // Does something to create a new lazy
 export type LazyCombiner<A, B, R> /* combo */ = (

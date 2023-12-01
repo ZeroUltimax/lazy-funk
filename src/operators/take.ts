@@ -19,4 +19,5 @@ function* _takeWhile<E>(z: Lazy<E>, pred: Predicate<E>): Gen<E> {
     else yield nx.value;
 }
 
+// Make E covariant
 export const takeWhile = lazyfyOp(_takeWhile);

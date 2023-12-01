@@ -10,13 +10,12 @@ import {
   sortedLeftGroupJoin,
 } from "./sortedGroupJoin";
 
-type SetCombiner = <E>(szb: Sorted<E>) => <E>(sza: Sorted<E>) => Lazy<E>;
-
 const unionGroupSelector = <A, B>(
   a: Lazy<A> | null,
   b: Lazy<B> | null
 ): A | B => rep<A | B>(a || b!);
 
+// Fixme: use proper types for return value
 export const sortedUnion = sortedFullGroupJoin(
   unionGroupSelector
 ) as SetCombiner;
@@ -27,24 +26,28 @@ export const sortedIntersection = sortedGroupJoin(
   intersectionGroupSelector
 ) as SetCombiner;
 
-interface DiffGroup<E> {
-  a: Lazy<E>;
-  b: Lazy<E> | null;
+interface DiffGroup<E, A extends E, B extends E> {
+  a: Lazy<A>;
+  b: Lazy<B> | null;
 }
 
-const differenceSelector = <E>(
-  a: Lazy<E>,
-  b: Lazy<E> | null
-): DiffGroup<E> => ({ a, b });
-const differenceFilter = <E>({ b }: DiffGroup<E>) => b === null;
-const differenceMap = <E>({ a }: DiffGroup<E>) => rep(a);
+const differenceSelector = <E, A extends E, B extends E>(
+  a: Lazy<A>,
+  b: Lazy<B> | null
+): DiffGroup<E, A, B> => ({ a, b });
+const differenceFilter = <E, B extends E>({
+  b,
+}: DiffGroup<E, any, B>): boolean => b === null;
+
+const differenceMap = <E, A extends E>({ a }: DiffGroup<E, A, any>): A =>
+  rep(a);
 
 export const sortedDifference =
-  <E>(szb: Sorted<E>) =>
-  (sza: Sorted<E>) =>
+  <E, B extends E>(szb: Sorted<E, B>) =>
+  <A extends E>(sza: Sorted<E, A>) =>
     map(differenceMap)(
       filter(differenceFilter)(
-        sortedLeftGroupJoin(differenceSelector<E>)(szb)(sza)
+        sortedLeftGroupJoin(differenceSelector<E, A, B>)(szb)(sza)
       )
     );
 

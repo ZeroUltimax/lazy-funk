@@ -29,18 +29,22 @@ function _minOrDefaultBy<E, D, K>(
   return min;
 }
 
+// Make E covariant
 export const minOrDefaultBy = curryReducer(_minOrDefaultBy);
+// Make E covariant
 export const minBy = <E, K>(sel: Selector<E, K>, keyCmp: Compare<K>) =>
   minOrDefaultBy(sel, keyCmp, noElement);
 export const minOrDefault = <D>(def: Seed<D>) =>
   minOrDefaultBy<number, D, number>(id, cmpNum, def);
 export const min = minOrDefaultBy<number, never, number>(id, cmpNum, noElement);
 
+// Make E covariant
 export const maxOrDefaultBy = <E, D, K>(
   sel: Selector<E, K>,
   keyCmp: Compare<K>,
   def: Seed<D>
 ) => minOrDefaultBy(sel, cmpInverse(keyCmp), def);
+// Make E covariant
 export const maxBy = <E, K>(sel: Selector<E, K>, keyCmp: Compare<K>) =>
   minOrDefaultBy(sel, cmpInverse(keyCmp), noElement);
 export const maxOrDefault = <D>(def: Seed<D>) =>

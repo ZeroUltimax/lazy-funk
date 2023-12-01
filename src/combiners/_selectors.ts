@@ -13,14 +13,20 @@ export type GroupResultSelector<A, Ad, B, Bd, K, R> = ResultSelector<
   K,
   R
 >;
-export type SortedResultSelector<E, Ad, Bd, R> = (a: E | Ad, b: E | Bd) => R;
-export type SortedGroupResultSelector<E, Ad, Bd, R> = SortedResultSelector<
-  Lazy<E>,
+export type SortedResultSelector<E, A extends E, Ad, B extends E, Bd, R> = (
+  a: A | Ad,
+  b: B | Bd
+) => R;
+export type SortedGroupResultSelector<
+  E,
+  A extends E,
   Ad,
+  B extends E,
   Bd,
   R
->;
+> = SortedResultSelector<Lazy<E>, Lazy<A>, Ad, Lazy<B>, Bd, R>;
 
+// Fixme: types are out of hands. I need an easier way.
 export const invSel =
   <A, Ad, B, Bd, K, R>(
     rSel: ResultSelector<A, Ad, B, Bd, K, R>

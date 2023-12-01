@@ -1,4 +1,4 @@
-import { Gen, Lazy, Seed, Sorted, SortedCombiner } from "../coreTypes";
+import { Gen, Lazy, Seed, SortedCombiner } from "../coreTypes";
 import { lazyfy } from "../funk/lazyfy";
 import { nullSeed } from "../funk/seed";
 import {

@@ -143,7 +143,7 @@ function* _introSort<E>(
   yield* _introSort(buf, cmp, mid, end, maxDepth - 1);
 }
 
-function* _sort<E>(z: Lazy<E>, cmp: Compare<E>): Gen<E> {
+function* _sort<E, CovE extends E>(z: Lazy<CovE>, cmp: Compare<E>): Gen<E> {
   const buf = [...z];
   const start = 0;
   const end = buf.length;
@@ -151,8 +151,10 @@ function* _sort<E>(z: Lazy<E>, cmp: Compare<E>): Gen<E> {
   yield* _introSort(buf, cmp, start, end, maxDepth);
 }
 
+// Make E covariant
 export const sort = lazyfySortedOp(_sort);
 
+// Make E covariant. Also sorted might need to have another type for cmp.
 export const asSorted = lazyfySortedOp(nrgz);
 
 function* _assertSorted<E>(z: Lazy<E>, cmp: Compare<E>): Gen<E> {
@@ -166,6 +168,7 @@ function* _assertSorted<E>(z: Lazy<E>, cmp: Compare<E>): Gen<E> {
     else yield (lEl = nx.value);
 }
 
+// Make E covariant
 export const assertSorted = lazyfySortedOp(_assertSorted);
 
 export const __TEST_ONLY__ = { _heapSort };

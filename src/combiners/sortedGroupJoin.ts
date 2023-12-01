@@ -7,14 +7,14 @@ import { throws } from "../funk/throws";
 import { SortedGroupResultSelector, invSortSel } from "./_selectors";
 
 const getCommonCompare = <E, A extends E, B extends E>(
-  { cmp: cmpa }: Sorted<A>,
-  { cmp: cmpb }: Sorted<B>
+  { cmp: cmpa }: Sorted<E, A>,
+  { cmp: cmpb }: Sorted<E, B>
 ): Compare<E> =>
   Object.is(cmpa, cmpb) ? (cmpa as Compare<E>) : throws("Different compares");
 
 function* _innerGroupJoin<E, A extends E, B extends E, R>(
-  sza: Sorted<A>,
-  szb: Sorted<B>,
+  sza: Sorted<E, A>,
+  szb: Sorted<E, B>,
   rSel: SortedGroupResultSelector<E, never, never, R>,
   cmp: Compare<E>
 ): Gen<R> {
@@ -49,8 +49,8 @@ function* _innerGroupJoin<E, A extends E, B extends E, R>(
 }
 
 function* _halfGroupJoin<E, A extends E, B extends E, Bd, R>(
-  sza: Sorted<A>,
-  szb: Sorted<B>,
+  sza: Sorted<E, A>,
+  szb: Sorted<E, B>,
   seedB: Seed<Bd>,
   rSel: SortedGroupResultSelector<E, never, Bd, R>,
   cmp: Compare<E>
@@ -89,9 +89,9 @@ function* _halfGroupJoin<E, A extends E, B extends E, Bd, R>(
 }
 
 function* _fullGroupJoin<E, A extends E, Ad, B extends E, Bd, R>(
-  sza: Sorted<A>,
+  sza: Sorted<E, A>,
   seedA: Seed<Ad>,
-  szb: Sorted<B>,
+  szb: Sorted<E, B>,
   seedB: Seed<Bd>,
   rSel: SortedGroupResultSelector<E, Ad, Bd, R>,
   cmp: Compare<E>
